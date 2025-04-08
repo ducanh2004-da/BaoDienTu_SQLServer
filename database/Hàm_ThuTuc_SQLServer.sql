@@ -1,5 +1,7 @@
 --2.Quản lý người dùng
 -- Lấy tất cả người dùng
+USE baodientu5;
+GO
 
 CREATE PROCEDURE sp_GetAllUsers
 AS
@@ -11,7 +13,7 @@ GO
 -- Tìm người dùng theo ID
 
 CREATE PROCEDURE sp_FindUserById
-    @id UNIQUEIDENTIFIER
+    @id INT
 AS
 BEGIN
     SELECT * FROM users WHERE userId = @id;
@@ -50,7 +52,7 @@ GO
 
 -- Thêm người dùng mới:
  
-CREATE PROCEDURE sp_AddUser
+CREATE PROCEDURE sp_AddUsers
     @Username NVARCHAR(255),
     @Email NVARCHAR(255),
     @Password NVARCHAR(255),
@@ -60,8 +62,8 @@ CREATE PROCEDURE sp_AddUser
     @Role NVARCHAR(50) = 'user'
 AS
 BEGIN
-    INSERT INTO users (userId, username, email, password, birthday, googleId, githubId, role)
-    VALUES (NEWID(), @Username, @Email, @Password, @Birthday, @GoogleId, @GithubId, @Role);
+    INSERT INTO users (username, email, password, birthday, googleId, githubId, role)
+    VALUES (@Username, @Email, @Password, @Birthday, @GoogleId, @GithubId, @Role);
 END;
 GO
 
@@ -102,7 +104,7 @@ GO
 -- Cập nhật vai trò người dùng
 
 CREATE PROCEDURE sp_UpdateUserRole
-    @Id UNIQUEIDENTIFIER,
+    @Id INT,
     @Role NVARCHAR(50)
 AS
 BEGIN
@@ -113,7 +115,7 @@ GO
 -- Cập nhật thông tin người dùng
 
 CREATE PROCEDURE sp_EditUser
-    @Id UNIQUEIDENTIFIER,
+    @Id INT,
     @Username NVARCHAR(255),
     @Email NVARCHAR(255),
     @PenName NVARCHAR(255),
@@ -128,7 +130,7 @@ GO
 -- Xóa người dùng
 
 CREATE PROCEDURE sp_DeleteUser
-    @Id UNIQUEIDENTIFIER
+    @Id INT
 AS
 BEGIN
     DELETE FROM users WHERE userId = @Id;
@@ -146,7 +148,7 @@ GO
 
 --3.Quản lý bài báo:
 -- Lấy tất cả bài viết
-CREATE PROCEDURE GetAllPosts
+CREATE PROCEDURE GetAllPostsPremium
 AS
 BEGIN
     SELECT * FROM posts ORDER BY premium DESC;
@@ -162,14 +164,6 @@ BEGIN
 END;
 GO
 
---Cập nhật trạng thái bài viết thành 'Published'
-
-CREATE PROCEDURE UpdatePublished @id INT
-AS
-BEGIN
-    UPDATE posts SET statusName = 'Published' WHERE postId = @id;
-END;
-GO
 
 -- Cập nhật ngày xuất bản theo lịch trình
 
@@ -459,15 +453,7 @@ BEGIN
 END;
 GO
 
--- Lấy danh mục theo ID
 
-CREATE PROCEDURE GetCategoryById
-    @id INT
-AS
-BEGIN
-    SELECT * FROM categories WHERE categoryId = @id;
-END;
-GO
 
 -- Xóa danh mục
 
@@ -514,7 +500,7 @@ GO
 -- Tạo stored procedure để thêm bài viết
 
 CREATE PROCEDURE InsertArticle
-    @id UNIQUEIDENTIFIER,
+    @id INT,
     @title NVARCHAR(255),
     @publish_date DATETIME NULL,
     @abstract NVARCHAR(MAX),
@@ -530,54 +516,111 @@ BEGIN
 END
 GO
 
--- Tạo stored procedure để lấy bài viết theo trạng thái
-
+-- Stored procedure lấy bài viết theo trạng thái
 CREATE PROCEDURE GetArticlesByStatus
-    @statusName NVARCHAR(50),
-    @userId INT
+    @statusName NVARCHAR(50),
+    @userId INT
 AS
 BEGIN
-    IF @statusName = 'all'
-    BEGIN
-        SELECT p.*, STRING_AGG(c.name, ', ') AS categories
-        FROM posts p
-        LEFT JOIN post_categories pc ON p.postId = pc.postId
-        LEFT JOIN categories c ON pc.categoryId = c.categoryId
-        WHERE p.userId = @userId
-        GROUP BY p.postId, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium;
-    END
-    ELSE
-    BEGIN
-        SELECT p.*, STRING_AGG(c.name, ', ') AS categories
-        FROM posts p
-        LEFT JOIN post_categories pc ON p.postId = pc.postId
-        LEFT JOIN categories c ON pc.categoryId = c.categoryId
-        WHERE p.statusName = @statusName AND p.userId = @userId
-        GROUP BY p.postId, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium;
-    END
+    IF @statusName = 'all'
+    BEGIN
+        SELECT 
+            p.*,
+            STRING_AGG(c.name, ', ') AS categories
+        FROM posts p
+        LEFT JOIN post_categories pc ON p.postId = pc.postId
+        LEFT JOIN categories c ON pc.categoryId = c.categoryId
+        WHERE p.userId = @userId
+        GROUP BY 
+            p.postId,
+            p.refuse,
+            p.title,
+            p.publish_date,
+            p.abstract,
+            p.media,
+            p.content,
+            p.tags,
+            p.statusName,
+            p.created_at,
+            p.updated_at,
+            p.userId,
+            p.premium,
+			p.views,
+			p.likes,
+			p.tags,
+            p.scheduled_publish_date;
+    END
+    ELSE
+    BEGIN
+        SELECT 
+            p.*,
+            STRING_AGG(c.name, ', ') AS categories
+        FROM posts p
+        LEFT JOIN post_categories pc ON p.postId = pc.postId
+        LEFT JOIN categories c ON pc.categoryId = c.categoryId
+        WHERE p.statusName = @statusName 
+          AND p.userId = @userId
+        GROUP BY 
+            p.postId,
+            p.refuse,
+            p.title,
+            p.publish_date,
+            p.abstract,
+            p.media,
+            p.content,
+            p.tags,
+            p.statusName,
+            p.created_at,
+            p.updated_at,
+            p.userId,
+			p.views,
+			p.likes,
+			p.tags,
+            p.premium,
+            p.scheduled_publish_date;
+    END
 END
 GO
 
 -- Tạo stored procedure để lấy bài viết theo userId
 
 CREATE PROCEDURE GetArticlesByUserId
-    @userId INT
+    @userId INT
 AS
 BEGIN
-    SELECT p.*, STRING_AGG(c.name, ', ') AS categories
-    FROM posts p
-    LEFT JOIN post_categories pc ON p.postId = pc.postId
-    LEFT JOIN categories c ON pc.categoryId = c.categoryId
-    WHERE p.userId = @userId
-    GROUP BY p.postId, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium
-    ORDER BY p.updated_at DESC;
+    SELECT 
+        p.*,
+        STRING_AGG(c.name, ', ') AS categories
+    FROM posts p
+    LEFT JOIN post_categories pc ON p.postId = pc.postId
+    LEFT JOIN categories c ON pc.categoryId = c.categoryId
+    WHERE p.userId = @userId
+    GROUP BY 
+        p.postId,
+        p.refuse,
+        p.title,
+        p.media,
+        p.publish_date,
+        p.abstract,
+        p.content,
+        p.tags,
+        p.statusName,
+        p.created_at,
+        p.updated_at,
+		p.views,
+		p.likes,
+		p.tags,
+        p.userId,
+        p.premium,
+        p.scheduled_publish_date
+    ORDER BY p.updated_at DESC;
 END
 GO
 
 -- Tạo stored procedure để cập nhật bài viết
 
 CREATE PROCEDURE UpdateArticle
-    @id UNIQUEIDENTIFIER,
+    @id INT,
     @title NVARCHAR(255),
     @abstract NVARCHAR(MAX),
     @content NVARCHAR(MAX),
@@ -604,7 +647,7 @@ BEGIN
     UPDATE posts
     SET updated_at = GETDATE()
     FROM posts
-    INNER JOIN inserted i ON posts.postId = i.id;
+    INNER JOIN inserted i ON posts.postId = i.postId;
 END
 GO
 
@@ -618,15 +661,6 @@ BEGIN
 END;
 GO
 
--- Lấy bài viết theo ID
-
-CREATE PROCEDURE GetPostById
-    @postId INT
-AS
-BEGIN
-    SELECT * FROM posts WHERE postId = @postId;
-END;
-GO
 
 -- Cập nhật trạng thái bài viết thành 'Published'
 
@@ -640,19 +674,28 @@ GO
 
 -- Lấy các bài viết theo trạng thái của editor
 
-CREATE PROCEDURE GetArticlesByStatusOfEditor
-    @statusName NVARCHAR(50),
-    @editorId INT
-AS
-BEGIN
-    SELECT posts.*, STRING_AGG(categories.name, ', ') AS categories
-    FROM posts
-    LEFT JOIN post_categories ON posts.postId = post_categories.postId
-    LEFT JOIN categories ON post_categories.categoryId = categories.categoryId
-    WHERE posts.statusName = @statusName AND categories.editorId = @editorId
-    GROUP BY posts.postId;
-END;
-GO
+CREATE PROCEDURE GetArticlesByStatusOfEditor 
+    @statusName NVARCHAR(50), 
+    @editorId INT 
+AS 
+BEGIN 
+    WITH CategoryAgg AS (
+        SELECT 
+            pc.postId, 
+            STRING_AGG(c.name, ', ') AS categories 
+        FROM post_categories pc 
+        JOIN categories c ON pc.categoryId = c.categoryId 
+        WHERE c.editorId = @editorId 
+        GROUP BY pc.postId 
+    )
+    SELECT 
+        posts.*, 
+        CategoryAgg.categories 
+    FROM posts 
+    JOIN CategoryAgg ON posts.postId = CategoryAgg.postId 
+    WHERE posts.statusName = @statusName;
+END; 
+GO 
 
 -- Kiểm tra xem bài viết có nằm trong danh mục của editor không
 
@@ -676,18 +719,26 @@ GO
 
 -- Lấy bài viết theo ID kèm danh mục
 
-CREATE PROCEDURE GetArticleById
-    @Id INT
-AS
-BEGIN
-    SELECT posts.*, STRING_AGG(categories.name, ', ') AS categories
-    FROM posts
-    LEFT JOIN post_categories ON posts.postId = post_categories.postId
-    LEFT JOIN categories ON post_categories.categoryId = categories.categoryId
-    WHERE posts.postId = @id
-    GROUP BY posts.postId;
-END;
-GO
+CREATE PROCEDURE GetArticleById 
+    @Id INT 
+AS 
+BEGIN 
+    WITH CategoryAgg AS (
+        SELECT 
+            pc.postId, 
+            STRING_AGG(c.name, ', ') AS categories 
+        FROM post_categories pc 
+        LEFT JOIN categories c ON pc.categoryId = c.categoryId 
+        GROUP BY pc.postId 
+    )
+    SELECT 
+        posts.*, 
+        CategoryAgg.categories 
+    FROM posts 
+    LEFT JOIN CategoryAgg ON posts.postId = CategoryAgg.postId 
+    WHERE posts.postId = @id;
+END; 
+GO 
 
 -- Lấy danh mục theo danh sách ID
 
@@ -739,19 +790,6 @@ BEGIN
     BEGIN
         UPDATE posts SET statusName = @statusName, refuse = @refuse WHERE postId = @postId;
     END
-END;
-GO
-
--- Trigger tự động cập nhật số lượng bài viết của editor khi có bài mới
-
-CREATE TRIGGER trg_UpdateEditorPostCount
-ON posts
-AFTER INSERT, DELETE
-AS
-BEGIN
-    UPDATE categories
-    SET postCount = (SELECT COUNT(*) FROM posts p JOIN post_categories pc ON p.postId = pc.postId WHERE pc.categoryId = categories.categoryId)
-    FROM categories;
 END;
 GO
 

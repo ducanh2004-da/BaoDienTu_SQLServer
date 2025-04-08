@@ -1,6 +1,6 @@
 
 -- Sử dụng cơ sở dữ liệu
-USE baodientu3;
+USE baodientu;
 GO
 
 -- Tạo bảng users

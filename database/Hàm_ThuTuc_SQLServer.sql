@@ -14,7 +14,7 @@ CREATE PROCEDURE sp_FindUserById
     @id UNIQUEIDENTIFIER
 AS
 BEGIN
-    SELECT * FROM users WHERE id = @id;
+    SELECT * FROM users WHERE userId = @id;
 END;
 GO
 
@@ -60,7 +60,7 @@ CREATE PROCEDURE sp_AddUser
     @Role NVARCHAR(50) = 'user'
 AS
 BEGIN
-    INSERT INTO users (id, username, email, password, birthday, googleId, githubId, role)
+    INSERT INTO users (userId, username, email, password, birthday, googleId, githubId, role)
     VALUES (NEWID(), @Username, @Email, @Password, @Birthday, @GoogleId, @GithubId, @Role);
 END;
 GO
@@ -106,7 +106,7 @@ CREATE PROCEDURE sp_UpdateUserRole
     @Role NVARCHAR(50)
 AS
 BEGIN
-    UPDATE users SET role = @Role WHERE id = @Id;
+    UPDATE users SET role = @Role WHERE userId = @Id;
 END;
 GO
 
@@ -121,7 +121,7 @@ CREATE PROCEDURE sp_EditUser
     @ImgURL NVARCHAR(500)
 AS
 BEGIN
-    UPDATE users SET username = @Username, email = @Email, penName = @PenName, birthday = @Birthday, imgURL = @ImgURL WHERE id = @Id;
+    UPDATE users SET username = @Username, email = @Email, penName = @PenName, birthday = @Birthday, imgURL = @ImgURL WHERE userId = @Id;
 END;
 GO
 
@@ -131,7 +131,7 @@ CREATE PROCEDURE sp_DeleteUser
     @Id UNIQUEIDENTIFIER
 AS
 BEGIN
-    DELETE FROM users WHERE id = @Id;
+    DELETE FROM users WHERE userId = @Id;
 END;
 GO
 
@@ -158,7 +158,7 @@ GO
 CREATE PROCEDURE GetPostById @id INT
 AS
 BEGIN
-    SELECT * FROM posts WHERE id = @id;
+    SELECT * FROM posts WHERE postId = @id;
 END;
 GO
 
@@ -167,7 +167,7 @@ GO
 CREATE PROCEDURE UpdatePublished @id INT
 AS
 BEGIN
-    UPDATE posts SET statusName = 'Published' WHERE id = @id;
+    UPDATE posts SET statusName = 'Published' WHERE postId = @id;
 END;
 GO
 
@@ -176,7 +176,7 @@ GO
 CREATE PROCEDURE UpdateScheduledPublishDate @id INT, @publishDate DATETIME
 AS
 BEGIN
-    UPDATE posts SET scheduled_publish_date = @publishDate, statusName = 'Approved' WHERE id = @id;
+    UPDATE posts SET scheduled_publish_date = @publishDate, statusName = 'Approved' WHERE postId = @id;
 END;
 GO
 
@@ -185,10 +185,10 @@ GO
 CREATE PROCEDURE GetPostAuthorInfo @id INT
 AS
 BEGIN
-    SELECT users.id, users.username, users.penName, users.email
+    SELECT users.userId, users.username, users.penName, users.email
     FROM users
-    JOIN posts ON users.id = posts.userId
-    WHERE posts.id = @id;
+    JOIN posts ON users.userId = posts.userId
+    WHERE posts.postId = @id;
 END;
 GO
 
@@ -197,7 +197,7 @@ GO
 CREATE PROCEDURE UpdatePost @id INT, @title NVARCHAR(255), @abstract NVARCHAR(MAX), @content NVARCHAR(MAX)
 AS
 BEGIN
-    UPDATE posts SET title = @title, abstract = @abstract, content = @content WHERE id = @id;
+    UPDATE posts SET title = @title, abstract = @abstract, content = @content WHERE postId = @id;
 END;
 GO
 
@@ -206,7 +206,7 @@ GO
 CREATE PROCEDURE DeletePost @id INT
 AS
 BEGIN
-    DELETE FROM posts WHERE id = @id;
+    DELETE FROM posts WHERE postId = @id;
 END;
 GO
 
@@ -215,7 +215,7 @@ GO
 CREATE PROCEDURE UpdateView @id INT
 AS
 BEGIN
-    UPDATE posts SET views = views + 1 WHERE id = @id;
+    UPDATE posts SET views = views + 1 WHERE postId = @id;
 END;
 GO
 
@@ -237,60 +237,66 @@ CREATE FUNCTION IsPremium(@id INT) RETURNS BIT
 AS
 BEGIN
     DECLARE @premium BIT;
-    SELECT @premium = premium FROM posts WHERE id = @id;
+    SELECT @premium = premium FROM posts WHERE postId = @id;
     RETURN @premium;
 END;
 GO
 
 --4.Các thao tác trên trang chủ:
--- Tạo stored procedure lấy danh sách sản phẩm bán chạy
-
-CREATE PROCEDURE GetBestSellingProducts
+-- Lấy danh sách 10 bài viết nhiều lượt like nhất
+CREATE PROCEDURE GetTop10LikedPosts
 AS
 BEGIN
-    SELECT p.id, p.name, p.price, COUNT(od.product_id) AS sold_count
-    FROM products p
-    JOIN order_details od ON p.id = od.product_id
-    JOIN orders o ON od.order_id = o.id
-    WHERE o.created_at >= DATEADD(DAY, -30, GETDATE())
-    GROUP BY p.id, p.name, p.price
-    ORDER BY sold_count DESC
-END
+    SELECT TOP 10 *
+    FROM posts
+    WHERE statusName = 'Published'
+    ORDER BY likes DESC, publish_date DESC;
+END;
 GO
 
--- Tạo stored procedure lấy sản phẩm mới nhất
-
-CREATE PROCEDURE GetLatestProducts
+-- Lấy danh sách 10 bài viết mới nhất
+CREATE PROCEDURE GetLatest10Posts
 AS
 BEGIN
-    SELECT *
-    FROM products
-    ORDER BY created_at DESC
-END
+    SELECT TOP 10 *
+    FROM posts
+    WHERE statusName = 'Published'
+    ORDER BY publish_date DESC;
+END;
 GO
 
---Tạo stored procedure lấy danh mục sản phẩm
-
+-- Lấy danh mục bài viết
 CREATE PROCEDURE GetCategories
 AS
 BEGIN
-    SELECT * FROM categories
-END
+    SELECT * FROM categories;
+END;
 GO
 
--- Tạo trigger tự động cập nhật số lượng sản phẩm khi có đơn hàng
-
-CREATE TRIGGER trg_UpdateProductStock
-ON order_details
-AFTER INSERT
+-- Trigger tự động cập nhật số lượng like
+CREATE TRIGGER trg_UpdateLikes
+ON posts
+AFTER INSERT, UPDATE
 AS
 BEGIN
-    UPDATE p
-    SET p.stock_quantity = p.stock_quantity - i.quantity
-    FROM products p
-    INNER JOIN inserted i ON p.id = i.product_id
-END
+    UPDATE posts
+    SET likes = (SELECT COUNT(*) FROM likes WHERE likes.postId = posts.postId)
+    FROM posts
+    INNER JOIN inserted i ON posts.postId = i.postId;
+END;
 GO
+
+-- Lấy danh sách 10 bài viết nhiều lượt xem nhất
+CREATE PROCEDURE GetTop10ViewedPosts
+AS
+BEGIN
+    SELECT TOP 10 *
+    FROM posts
+    WHERE statusName = 'Published'
+    ORDER BY views DESC, publish_date DESC;
+END;
+GO
+
 
 --5.Quản lý gói đăng ký của người dùng:
 -- Lấy tất cả subscription
@@ -305,10 +311,10 @@ GO
 -- Lấy subscription theo ID
 
 CREATE PROCEDURE GetSubscriptionById
-    @id INT
+    @subscriptionId INT
 AS
 BEGIN
-    SELECT * FROM subscriptions WHERE id = @id;
+    SELECT * FROM subscriptions WHERE subscriptionId = @subscriptionId;
 END;
 GO
 
@@ -390,7 +396,7 @@ BEGIN
 
     UPDATE users
     SET role = 'non-subscriber'
-    WHERE id = @userId;
+    WHERE userId = @userId;
 END;
 GO
 
@@ -401,6 +407,19 @@ CREATE PROCEDURE SelectEndDay
 AS
 BEGIN
     SELECT end_date FROM subscriptions WHERE userId = @userId;
+END;
+GO
+
+-- Trigger cập nhật trạng thái subscription khi hết hạn
+
+CREATE TRIGGER trg_UpdateSubscriptionStatus
+ON subscriptions
+AFTER UPDATE
+AS
+BEGIN
+    UPDATE subscriptions
+    SET status = 'Expired'
+    WHERE end_date <= GETDATE() AND status = 'Active';
 END;
 GO
 
@@ -436,7 +455,7 @@ AS
 BEGIN
     UPDATE categories
     SET name = @name
-    WHERE id = @id;
+    WHERE categoryId = @id;
 END;
 GO
 
@@ -446,7 +465,7 @@ CREATE PROCEDURE GetCategoryById
     @id INT
 AS
 BEGIN
-    SELECT * FROM categories WHERE id = @id;
+    SELECT * FROM categories WHERE categoryId = @id;
 END;
 GO
 
@@ -456,7 +475,7 @@ CREATE PROCEDURE DeleteCategory
     @id INT
 AS
 BEGIN
-    DELETE FROM categories WHERE id = @id;
+    DELETE FROM categories WHERE categoryId = @id;
 END;
 GO
 
@@ -468,7 +487,6 @@ BEGIN
     SELECT * FROM categories WHERE parent_id IS NULL;
 END;
 GO
-
 -- Lấy danh mục theo editorId
 
 CREATE PROCEDURE GetEditorCategories
@@ -485,9 +503,9 @@ CREATE PROCEDURE GetPostCategories
     @postId INT
 AS
 BEGIN
-    SELECT c.id, c.name
+    SELECT c.categoryId, c.name
     FROM categories c
-    JOIN post_categories pc ON c.id = pc.categoryId
+    JOIN post_categories pc ON c.categoryId = pc.categoryId
     WHERE pc.postId = @postId;
 END;
 GO
@@ -507,7 +525,7 @@ CREATE PROCEDURE InsertArticle
     @premium BIT
 AS
 BEGIN
-    INSERT INTO posts (id, title, publish_date, abstract, content, tags, statusName, created_at, updated_at, userId, premium)
+    INSERT INTO posts (postId, title, publish_date, abstract, content, tags, statusName, created_at, updated_at, userId, premium)
     VALUES (@id, @title, @publish_date, @abstract, @content, @tags, @statusName, GETDATE(), GETDATE(), @userId, @premium);
 END
 GO
@@ -523,19 +541,19 @@ BEGIN
     BEGIN
         SELECT p.*, STRING_AGG(c.name, ', ') AS categories
         FROM posts p
-        LEFT JOIN post_categories pc ON p.id = pc.postId
-        LEFT JOIN categories c ON pc.categoryId = c.id
+        LEFT JOIN post_categories pc ON p.postId = pc.postId
+        LEFT JOIN categories c ON pc.categoryId = c.categoryId
         WHERE p.userId = @userId
-        GROUP BY p.id, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium;
+        GROUP BY p.postId, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium;
     END
     ELSE
     BEGIN
         SELECT p.*, STRING_AGG(c.name, ', ') AS categories
         FROM posts p
-        LEFT JOIN post_categories pc ON p.id = pc.postId
-        LEFT JOIN categories c ON pc.categoryId = c.id
+        LEFT JOIN post_categories pc ON p.postId = pc.postId
+        LEFT JOIN categories c ON pc.categoryId = c.categoryId
         WHERE p.statusName = @statusName AND p.userId = @userId
-        GROUP BY p.id, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium;
+        GROUP BY p.postId, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium;
     END
 END
 GO
@@ -548,10 +566,10 @@ AS
 BEGIN
     SELECT p.*, STRING_AGG(c.name, ', ') AS categories
     FROM posts p
-    LEFT JOIN post_categories pc ON p.id = pc.postId
-    LEFT JOIN categories c ON pc.categoryId = c.id
+    LEFT JOIN post_categories pc ON p.postId = pc.postId
+    LEFT JOIN categories c ON pc.categoryId = c.categoryId
     WHERE p.userId = @userId
-    GROUP BY p.id, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium
+    GROUP BY p.postId, p.title, p.publish_date, p.abstract, p.content, p.tags, p.statusName, p.created_at, p.updated_at, p.userId, p.premium
     ORDER BY p.updated_at DESC;
 END
 GO
@@ -570,9 +588,23 @@ AS
 BEGIN
     UPDATE posts
     SET title = @title, abstract = @abstract, content = @content, statusName = @statusName, updated_at = GETDATE(), tags = @tags, premium = @premium
-    WHERE id = @id;
+    WHERE postId = @id;
 
     DELETE FROM post_categories WHERE postId = @id;
+END
+GO
+
+-- Trigger để tự động cập nhật ngày cập nhật của bài viết
+
+CREATE TRIGGER trg_UpdatePostTimestamp
+ON posts
+AFTER UPDATE
+AS
+BEGIN
+    UPDATE posts
+    SET updated_at = GETDATE()
+    FROM posts
+    INNER JOIN inserted i ON posts.postId = i.id;
 END
 GO
 
@@ -589,20 +621,20 @@ GO
 -- Lấy bài viết theo ID
 
 CREATE PROCEDURE GetPostById
-    @id INT
+    @postId INT
 AS
 BEGIN
-    SELECT * FROM posts WHERE id = @id;
+    SELECT * FROM posts WHERE postId = @postId;
 END;
 GO
 
 -- Cập nhật trạng thái bài viết thành 'Published'
 
 CREATE PROCEDURE UpdatePublished
-    @id INT
+    @postId INT
 AS
 BEGIN
-    UPDATE posts SET statusName = 'Published' WHERE id = @id;
+    UPDATE posts SET statusName = 'Published' WHERE postId = @postId;
 END;
 GO
 
@@ -615,10 +647,10 @@ AS
 BEGIN
     SELECT posts.*, STRING_AGG(categories.name, ', ') AS categories
     FROM posts
-    LEFT JOIN post_categories ON posts.id = post_categories.postId
-    LEFT JOIN categories ON post_categories.categoryId = categories.id
+    LEFT JOIN post_categories ON posts.postId = post_categories.postId
+    LEFT JOIN categories ON post_categories.categoryId = categories.categoryId
     WHERE posts.statusName = @statusName AND categories.editorId = @editorId
-    GROUP BY posts.id;
+    GROUP BY posts.postId;
 END;
 GO
 
@@ -632,7 +664,7 @@ BEGIN
     IF EXISTS (
         SELECT 1
         FROM post_categories pc
-        JOIN categories c ON pc.categoryId = c.id
+        JOIN categories c ON pc.categoryId = c.categoryId
         WHERE pc.postId = @postId AND c.editorId = @editorId
     )
     BEGIN
@@ -645,15 +677,15 @@ GO
 -- Lấy bài viết theo ID kèm danh mục
 
 CREATE PROCEDURE GetArticleById
-    @id INT
+    @Id INT
 AS
 BEGIN
     SELECT posts.*, STRING_AGG(categories.name, ', ') AS categories
     FROM posts
-    LEFT JOIN post_categories ON posts.id = post_categories.postId
-    LEFT JOIN categories ON post_categories.categoryId = categories.id
-    WHERE posts.id = @id
-    GROUP BY posts.id;
+    LEFT JOIN post_categories ON posts.postId = post_categories.postId
+    LEFT JOIN categories ON post_categories.categoryId = categories.categoryId
+    WHERE posts.postId = @id
+    GROUP BY posts.postId;
 END;
 GO
 
@@ -684,10 +716,10 @@ GO
 -- Lấy danh mục theo ID
 
 CREATE PROCEDURE GetCategoryById
-    @id INT
+    @categoryId INT
 AS
 BEGIN
-    SELECT name FROM categories WHERE id = @id;
+    SELECT name FROM categories WHERE categoryId = @categoryId;
 END;
 GO
 
@@ -701,12 +733,25 @@ AS
 BEGIN
     IF @statusName = 'Approved'
     BEGIN
-        UPDATE posts SET statusName = @statusName WHERE id = @postId;
+        UPDATE posts SET statusName = @statusName WHERE postId = @postId;
     END
     ELSE IF @statusName = 'Rejected'
     BEGIN
-        UPDATE posts SET statusName = @statusName, refuse = @refuse WHERE id = @postId;
+        UPDATE posts SET statusName = @statusName, refuse = @refuse WHERE postId = @postId;
     END
+END;
+GO
+
+-- Trigger tự động cập nhật số lượng bài viết của editor khi có bài mới
+
+CREATE TRIGGER trg_UpdateEditorPostCount
+ON posts
+AFTER INSERT, DELETE
+AS
+BEGIN
+    UPDATE categories
+    SET postCount = (SELECT COUNT(*) FROM posts p JOIN post_categories pc ON p.postId = pc.postId WHERE pc.categoryId = categories.categoryId)
+    FROM categories;
 END;
 GO
 
@@ -727,7 +772,7 @@ CREATE PROCEDURE GetCommentById
     @CommentId INT
 AS
 BEGIN
-    SELECT * FROM comments WHERE id = @CommentId;
+    SELECT * FROM comments WHERE commentId = @CommentId;
 END;
 GO
 
@@ -739,7 +784,7 @@ AS
 BEGIN
     SELECT c.*, u.*
     FROM comments c
-    JOIN users u ON c.userId = u.id
+    JOIN users u ON c.userId = u.userId
     WHERE c.postId = @PostId;
 END;
 GO

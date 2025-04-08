@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Bài Viết</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheet/admin/showPost.css">
+</head>
+<body>
+<div class="post-detail-container">
+    <a href="/admin" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Trở về
+    </a>
+    <h1 class="post-title">{{posts.title}}</h1>
+    <p>Trạng thái: {{posts.statusName}}</p>
+    <p class="post-meta">Ngày đăng: 10/10/2024 | Tác giả: Nguyễn Văn A</p>
+
+    <div class="post-content">
+        <p>{{posts.content}}</p>
+        <p>Phần này sẽ được hiển thị chi tiết để Admin có thể xem xét và quyết định duyệt hay không duyệt bài viết. Nội dung cần phải hấp dẫn và dễ đọc để Admin có thể đưa ra quyết định chính xác.</p>
+    </div>
+
+    <div class="action-buttons">
+        <a href="/admin/post/{{posts.id}}/edit" class="btn btn-info">Sửa</a>
+        <button class="approve-btn" onclick="approvePost()">Duyệt</button>
+        <button class="reject-btn" onclick="rejectPost()">Không Duyệt</button>
+    </div>
+</div>
+
+<script>
+    // Function to approve the post
+    function approvePost() {
+        alert('Bài viết đã được duyệt.');
+        // Code to update status in the database or backend can go here
+    }
+
+    // Function to reject the post
+    function rejectPost() {
+        alert('Bài viết đã bị từ chối.');
+        // Code to update status in the database or backend can go here
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

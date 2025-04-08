@@ -1,0 +1,79 @@
+/* Sidebar Styles */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Initially hidden */
+    width: 300px;
+    height: 100vh;
+    border-radius: 0 25px 25px 0;
+    background-color: #343a40; /* Dark background */
+    color: white;
+    z-index: 1050; /* Higher than the main content */
+    transition: left 0.3s ease-in-out;
+}
+
+.sidebar-overlay.active {
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    left: 0; /* Slide into view */
+}
+
+/* Blur Effect on Main Content */
+.content-blur {
+    filter: blur(5px);
+    transition: filter 0.3s ease-in-out;
+}
+
+/* Overlay to block content interactions */
+.content-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent overlay */
+    z-index: 1040; /* Below the sidebar but above content */
+    display: none;
+}
+
+/* Toggle Button Styles */
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: -25px; /* Positioned on the edge of the sidebar */
+    transform: translateY(-50%);
+    width: 50px;
+    height: 100px;
+    background-color: #343a40;
+    color: white;
+    border: none;
+    border-radius: 0 25px 25px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.sidebar-toggle-btn:hover {
+    transform: translateY(-50%) translateX(10px); /* Slide out slightly */
+    background-color: #495057;
+}
+
+.sidebar-overlay.active .sidebar-toggle-btn:hover {
+    transform: translateY(-50%);
+}
+
+.sidebar-toggle-btn svg {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Rotate the arrow when sidebar is active */
+.sidebar-overlay.active .sidebar-toggle-btn svg {
+    transform: rotate(180deg);
+}
+
+/* Apply border-radius to toggle when sidebar is active */
+.sidebar-overlay.active .sidebar-toggle-btn {
+    border-radius: 25px;
+}

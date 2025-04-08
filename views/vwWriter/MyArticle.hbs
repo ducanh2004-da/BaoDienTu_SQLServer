@@ -1,0 +1,182 @@
+{{#section "js"}}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".refuse-reason").forEach(button => {
+                button.addEventListener("click", function() {
+                    const hiddenInput = this.closest(".refuse-button-box").querySelector("input[type='hidden']");
+                    if (hiddenInput) {
+                        console.log("Hidden input found:", hiddenInput.value);
+                        $.getJSON(`/writer/refuse-article?id=${hiddenInput.value}`, function(data) {
+                            const refuseReason = data.refuse;
+                            document.getElementById("refuse-reason-text").innerText = refuseReason;
+                        });
+                    } else {
+                        console.log("No hidden input found");
+                    }
+                });
+            });
+
+        });
+    </script>
+{{/section}}
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sidebar">
+    <button class="sidebar-toggle-btn" id="toggle-sidebar" aria-label="Toggle Sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+        </svg>
+    </button>
+    <nav class="nav flex-column p-4">
+        <a class="nav-link text-white glow-on-hover" href="./post-article">Viết bài mới&nbsp;
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
+                <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"/>
+            </svg>
+        </a>
+        <a class="nav-link text-white glow-on-hover" href="./my-articles">Bài viết của tôi&nbsp;
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-text-fill" viewBox="0 0 16 16">
+                <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1z"/>
+            </svg>
+        </a>
+    </nav>
+</div>
+
+<div class="container my-5">
+    <!-- Tab navigation with Flexbox to spread tabs evenly -->
+    <ul class="nav nav-pills nav-fill mb-4" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-approval-tab" data-toggle="pill" data-target="#pills-approval" type="button" role="tab" aria-controls="pills-approval" aria-selected="true">Đã duyệt / Chờ xuất bản</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-published-tab" data-toggle="pill" data-target="#pills-published" type="button" role="tab" aria-controls="pills-published" aria-selected="false">Đã đăng</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-rejected-tab" data-toggle="pill" data-target="#pills-rejected" type="button" role="tab" aria-controls="pills-rejected" aria-selected="false">Từ chối</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-pending-tab" data-toggle="pill" data-target="#pills-pending" type="button" role="tab" aria-controls="pills-pending" aria-selected="false">Chờ duyệt</button>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-approval" role="tabpanel" aria-labelledby="pills-approval-tab">
+            <div class="list-group">
+                {{#each articles}}
+                    {{#if (ifCond this.statusName "===" 'Approved')}}
+                        {{#each this.articles}}
+                            <div class="list-group-item d-flex align-items-center">
+                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="Article thumbnail" class="rounded mr-3" style="width: 60px; height: 60px;">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1">{{this.title}}</h5>
+                                    <p class="mb-1">{{this.statusName}}</p>
+                                    <p class="mb-0">Lần cuối sửa: {{#if this.updated_at}}{{this.updated_at}}{{else}}No{{/if}}</p>
+                                </div>
+                            </div>
+                        {{/each}}
+                    {{/if}}
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-published" role="tabpanel" aria-labelledby="pills-published-tab">
+            <div class="list-group">
+                {{#each articles}}
+                    {{#if (ifCond this.statusName "===" 'Published')}}
+                        {{#each this.articles}}
+                            <div class="list-group-item d-flex align-items-center">
+                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="Article thumbnail" class="rounded mr-3" style="width: 60px; height: 60px;">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1">{{this.title}}</h5>
+                                    <p class="mb-1">{{this.statusName}}</p>
+                                    <p class="mb-0">Lần cuối sửa: {{#if this.updated_at}}{{this.updated_at}}{{else}}No{{/if}}</p>
+                                </div>
+                            </div>
+                        {{/each}}
+                    {{/if}}
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-rejected" role="tabpanel" aria-labelledby="pills-rejected-tab">
+            <div class="list-group">
+                {{#each articles}}
+                    {{#if (ifCond this.statusName "===" 'Rejected')}}
+                        {{#each this.articles}}
+                            <div class="list-group-item d-flex align-items-center">
+                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="Article thumbnail" class="rounded mr-3" style="width: 60px; height: 60px;">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1">{{this.title}}</h5>
+                                    <p class="mb-1">{{this.statusName}}</p>
+                                    <p class="mb-0">Lần cuối sửa: {{#if this.updated_at}}{{this.updated_at}}{{else}}No{{/if}}</p>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2 refuse-button-box btn-group ml-auto" role="group" aria-label="Basic example">
+                                <a class="btn btn-danger btn-sm" href="/writer/fix-article?id={{this.id}}">
+                                    Sửa lại&nbsp;
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                </svg>
+                                </a>
+                                <button class="btn btn-info btn-sm refuse-reason rounded-right" type="button" data-toggle="modal" data-target="#preview-modal">
+                                    Xem lý do&nbsp;
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-exclamation" viewBox="0 0 16 16">
+                                        <path d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z"/>
+                                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1.5a.5.5 0 0 1-1 0V11a.5.5 0 0 1 1 0m0 3a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                                    </svg>
+                                </button>
+                                <input type="hidden" name="post_id" value="{{this.id}}">
+                            </div>
+                        {{/each}}
+                    {{/if}}
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-pending" role="tabpanel" aria-labelledby="pills-pending-tab">
+            <div class="list-group">
+                {{#each articles}}
+                    {{#if (ifCond this.statusName "===" 'Pending-Approval')}}
+                        {{#each this.articles}}
+                            <a href="/writer/fix-article?id={{this.id}}" class="text-decoration-none">
+                            <div class="list-group-item d-flex align-items-center">
+                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="Article thumbnail" class="rounded mr-3" style="width: 60px; height: 60px;">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1">{{this.title}}</h5>
+                                    <p class="mb-1">{{this.statusName}}</p>
+                                    <p class="mb-0">Lần cuối sửa: {{#if this.updated_at}}{{this.updated_at}}{{else}}No{{/if}}</p>
+                                </div>
+                            </div>
+                            </a>
+                        {{/each}}
+                    {{/if}}
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="modal fade" id="preview-modal" tabindex="-1" role="dialog" aria-labelledby="preview-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="preview-modal-label">Lý do từ chối</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12">
+                                    <p id="refuse-reason-text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

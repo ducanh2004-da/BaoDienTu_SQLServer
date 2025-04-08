@@ -1,0 +1,29 @@
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+.forgot-password-form {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+.form-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #343a40;
+    text-align: center;
+}
+.btn-submit {
+    background-color: #007bff;
+    color: #ffffff;
+}
+.btn-submit:hover {
+    background-color: #0056b3;
+}
+.alert-message {
+    margin-top: 15px;
+}

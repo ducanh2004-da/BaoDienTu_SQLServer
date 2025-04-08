@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Danh Mục</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheet/admin/addCategory.css">
+    
+</head>
+<body>
+<div class="form-container">
+    <a href="/admin" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Trở về
+    </a>
+    <h1 class="form-header">Thêm Danh Mục Mới</h1>
+    <form action="/admin/category/create" method="POST">
+        <div class="form-group mb-3">
+            <label for="categoryName">Tên Danh Mục</label>
+            <input type="text" class="form-control" id="categoryName" name="name" placeholder="Nhập tên danh mục" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="editorId">Editor ID:</label>
+            <select name="editorId" id="editorId">
+                {{#if user}}
+                {{#each user}}
+                    <option value="{{this.id}}">{{this.username}} - {{this.role}}</option>
+                {{/each}}
+                {{/if}}
+                <option value="">Null</option>
+            </select>
+            <label for="parentId">Parent ID:</label>
+            <select name="parentId" id="parentId">
+                {{#if category}}
+                {{#each category}}
+                    <option value="{{this.id}}">{{this.name}}</option>
+                {{/each}}
+                {{/if}}
+                <option value="">Null</option>
+            </select>
+        </div>
+        <button type="submit" class="submit-btn">Lưu Danh Mục</button>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

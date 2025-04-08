@@ -1,0 +1,262 @@
+{{#section 'css'}}
+    <style>
+        p {
+            margin: 0;
+        }
+    </style>
+{{/section}}
+
+{{#section 'js'}}
+    <script>
+        // Submit Rejection
+        function submitRejection(articleId) {
+            const reason = document.getElementById('reject-reason').value;
+            const rejectionData = {
+                id: articleId,
+                rejectReason: reason
+            };
+
+            fetch('/editor/article-rejected', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(rejectionData),
+            })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.message === 'Cập nhật trạng thái thành công.') {
+                            alert('Lý do từ chối đã được gửi thành công.');
+                            window.location.href = '/editor';
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi gửi dữ liệu.');
+                    });
+        }
+
+        // Submit Approval
+        function submitApproval(articleId) {
+            const approvalData = {
+                id: articleId
+            };
+
+            fetch('/editor/article-approved', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(approvalData),
+            })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.message === 'Cập nhật trạng thái thành công.') {
+                            alert('Bài viết đã được duyệt thành công.');
+                            window.location.href = '/editor';
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi gửi dữ liệu.');
+                    });
+        }
+    </script>
+{{/section}}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<!-- Sidebar -->
+
+<div class="sidebar-overlay" id="sidebar">
+    <button class="sidebar-toggle-btn" id="toggle-sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+        </svg>
+    </button>
+    <nav class="nav flex-column p-4">
+        <a class="nav-link text-white" href="#">Các chuyên mục</a>
+    </nav>
+</div>
+
+<!-- Main Content -->
+<main class="container-fluid" id="main-content">
+    <!-- Form Container -->
+    <div class="container-fluid bg-light p-4 rounded-lg shadow-lg my-4">
+        <form action="/editor/article-update" method="POST" id="review-form">
+            <!-- Post ID -->
+            <input type="hidden" name="post-id" value="{{article.id}}" readonly/>
+            <!-- Title Input -->
+            <div class="form-group">
+                <label for="post-title">Tiêu đề bài viết</label>
+                <input type="text" class="form-control" id="post-title" name="post-title" value="{{article.title}}" readonly/>
+            </div>
+
+            <!-- Short Description -->
+            <div class="form-group">
+                <label for="short-description">Mô tả ngắn</label>
+                <textarea class="form-control" id="short-description" rows="4" name="short-description" readonly>{{article.abstract}}</textarea>
+            </div>
+
+            <!-- Full Description -->
+            <div class="form-group">
+                <label for="full-description">Nội dung bài viết</label>
+                <div class="container-fluid bg-white border p-4 rounded d-flex align-items-center" id="full-description">
+                    {{{article.content}}}
+                </div>
+            </div>
+
+            <!-- Thumbnail Image -->
+            <div class="form-group">
+                <label for="post-thumbnail">Ảnh nền</label>
+                <img src="/public/posts/imgs/{{article.id}}/thumbnail.jpg" alt="Post Thumbnail" class="img-thumbnail" id="post-thumbnail" style="display: block; height: 100%; max-width: 400px"/>
+            </div>
+
+            <!-- Author -->
+            <div class="form-group">
+                <label for="author">Tài khoản</label>
+                <input type="text" class="form-control" id="author" name="author" value="{{#if author.penName}}{{author.penName}}{{else}}{{author.username}}{{/if}}" readonly/>
+            </div>
+
+            <!-- Tags Container -->
+            <div class="form-group">
+                <div id="tag-container" class="tag-container border rounded p-3">
+                    {{#each tags}}
+                        <div class="tag">
+                            <span>{{this}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-center">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#approve-modal">
+                        Chấp nhận bài(để admin duyệt)
+                    </button>
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#reject-modal">
+                        Từ chối
+                    </button>
+                </div>
+            </div>
+        </form>
+        <form action="/editor/post/{{article.id}}/accept" method="POST">
+        <button style="margin-left:40%;" type="submit" class="btn btn-success btn-lg d-flex align-items-center gap-2">
+            <i class="fas fa-check"></i> Duyệt luôn(không lên lịch)
+        </button>
+       </form>
+
+        <!-- Approve Modal -->
+        <div class="modal fade" id="approve-modal" tabindex="-1" role="dialog" aria-labelledby="approve-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="approve-modal-label">Duyệt bài</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn để admin duyệt bài viết này?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-success" onclick="submitApproval({{article.id}})">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal chỉnh thời gian đăng bài -->
+<div class="modal fade" id="schedule-modal" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scheduleModalLabel">Chỉnh thời gian đăng bài</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/editor/post/{{article.id}}/schedule" method="POST">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="publish_date">Chọn thời gian đăng bài:</label>
+            <input type="datetime-local" class="form-control" id="publish_date" name="publish_date" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Chấp nhận & Lên lịch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Nút mở modal -->
+<div class="d-flex justify-content-center mt-3">
+  <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#schedule-modal">
+    Chỉnh thời gian đăng bài
+  </button>
+</div>
+
+
+        <!-- Reject Modal -->
+        <div class="modal fade" id="reject-modal" tabindex="-1" role="dialog" aria-labelledby="reject-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="reject-modal-label">Từ chối bài viết</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn từ chối bài viết này?</p>
+                        <div class="form-group">
+                            <label for="reject-reason">Lý do từ chối (Tùy chọn):</label>
+                            <textarea class="form-control" id="reject-reason" rows="4" placeholder="Nhập lý do từ chối"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-danger" onclick="submitRejection({{article.id}})">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Modal -->
+        <div class="modal fade" id="preview-modal" tabindex="-1" role="dialog" aria-labelledby="preview-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="preview-modal-label">Xem trước bài viết</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Back to Top Button -->
+<a class="position-fixed btn-dark rounded-circle" id="btn-back-to-top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-arrow-up-circle" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z" />
+    </svg>
+</a>

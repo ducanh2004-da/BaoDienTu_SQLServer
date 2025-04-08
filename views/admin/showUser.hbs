@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Người Dùng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheet/admin/showUser.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="/admin" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Trở về
+    </a>
+    <h1 class="user-header">Thông Tin Người Dùng</h1>
+    <div class="user-detail">
+        <p><strong>ID:</strong>{{users.id}}</p>
+        <p><strong>Họ Tên:</strong> {{users.username}}</p>
+        <p><strong>Email:</strong> {{users.email}}</p>
+        <p><strong>Vai Trò:</strong> {{users.role}}</p>
+        <p><strong>Ngày Tạo Tài Khoản:</strong> {{users.created_at}}</p>
+        <p><strong>Bút danh:</strong> {{users.penName}}</p>
+    </div>
+
+    <div class="user-actions">
+        <a href="/admin/user/{{users.id}}/edit" class="btn btn-edit">Chỉnh Sửa vai Trò</a>
+            {{#ifEquals users.role "subscriber"}}
+                <a href="/admin/user/{{users.id}}/delay" class="btn btn-success">Gia hạn tài khoản</a>
+            {{/ifEquals}}
+        <form action="/admin/user/{{users.id}}/delete" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
+            <button type="submit" class="btn btn-delete">Xóa Người Dùng</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

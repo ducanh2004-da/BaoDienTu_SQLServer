@@ -1,0 +1,308 @@
+{{#section "js"}}
+    <script>
+        function getPostData() {
+            // Get the post title
+            const title = document.getElementById('post-title')?.textContent.trim();
+
+            // Get the post abstract
+            const abstract = document.getElementById('post-abstract')?.textContent.trim();
+
+            // Get the thumbnail URL
+            const thumbnailURL = document.querySelector('#post-image img')?.src;
+
+            // Get the post content (HTML or text based on your preference)
+            const content = document.getElementById('post-content')?.innerHTML.trim();
+
+            // Get categories
+            const categories = Array.from(
+                    document.querySelectorAll('.container-fluid p a.text-decoration-none[href*="category"]')
+            ).map((el) => ({
+                id: el.href.split('/').pop(),
+                name: el.textContent.trim(),
+            }));
+
+            // Get tags
+            const tags = Array.from(
+                    document.querySelectorAll('.container-fluid p a.text-decoration-none[href*="tag"]')
+            ).map((el) => el.textContent.trim().replace(/,$/, ''));
+
+            return {
+                title,
+                abstract,
+                thumbnailURL,
+                content,
+                categories,
+                tags,
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get the post data
+            document.querySelector('#download-pdf').addEventListener('click', () => {
+                const postData = getPostData();
+                console.log(postData);
+
+                downloadPDF({
+                    title: postData.title,
+                    abstract: postData.abstract,
+                    thumbnailURL: postData.thumbnailURL,
+                    content: postData.content,
+                    categories: postData.categories,
+                    tags: postData.tags,
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const likeForm = document.getElementById('like-form');
+
+            likeForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(likeForm);
+                const postId = likeForm.action.split('/').pop();
+
+                fetch(`/main/post/like/${postId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.querySelector('#like-count').innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                </svg>
+                                Đã thích: ${data.likes}`; // Update like count
+
+                            } else {
+                                // Handle error (e.g., show error message)
+                                alert(data.message || 'An error occurred.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred.');
+                        });
+            });
+        });
+    </script>
+
+{{/section}}
+
+<div class="container-xl my-5">
+    <!-- Article Section -->
+    <article class="mb-5">
+        <!-- Title -->
+        <h1 class="h1 text-center font-weight-bold mb-4" id="post-title">{{post.title}}</h1>
+
+        <!-- Abstract Box -->
+        <div class="p-4 bg-light border rounded shadow-sm mb-4" id="post-abstract">
+            <p class="mb-0" >{{post.abstract}}</p>
+        </div>
+
+        <!-- Main Image -->
+        <div class="text-center mb-4" id="post-image">
+            <img src="/public/posts/imgs/{{post.id}}/thumbnail.jpg" class="img-fluid rounded shadow" alt="Main Image">
+        </div>
+
+        <!-- Main Content -->
+        <div class="container-fluid mb-4" id="post-content">
+            {{{post.content}}}
+        </div>
+
+        <div class="container-fluid mb-4">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <p>
+                        Thể loại:
+                        {{#each postCategories}}
+                            {{#if @last}}
+                                <a href="{{#if ../user}}/main{{else}}/home{{/if}}/category/{{this.id}}" class="text-primary text-decoration-none">{{this.name}}</a>
+                            {{else}}
+                                <a href="{{#if ../user}}/main{{else}}/home{{/if}}/category/{{this.id}}" class="text-primary text-decoration-none">{{this.name}}, </a>
+                            {{/if}}
+                        {{/each}}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="container text-muted mb-4">
+            <div class="row">
+                <!-- Left Section -->
+                <div class="col-md-6">
+                    <!-- Views -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <p id="view-count">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                                </svg>
+                                &nbsp;
+                                Đã xem: {{post.views}}
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Likes -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <p id="like-count">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                </svg>
+                                &nbsp;
+                                &nbsp;Đã thích: {{post.likes}}
+                            </p>
+                            {{#if user}}
+                                <form action="" method="POST" id="like-form">
+                                    <button style="all: unset;" type="submit">
+                                        <a class='like-button text-decoration-none {{#if isLiked}}liked{{/if}}'>
+                                        <span class='like-icon'>
+                                            <div class='heart-animation-1'></div>
+                                            <div class='heart-animation-2'></div>
+                                        </span>
+                                            Thích
+                                        </a>
+                                    </button>
+                                </form>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Section -->
+                <div class="col-md-6 text-right">
+                    <!-- Author -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <p>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+                                &nbsp;Đăng bởi: <strong>{{author.penName}}</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Publish Date -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <p>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
+                                    <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                                </svg>
+                                &nbsp;Đăng vào: {{post.updated_at}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tags Section -->
+        <div class="container-fluid mb-4">
+            <div class="row">
+                <div class="col-12">
+                    <p>
+                        Tags:&nbsp;
+                        {{#each tags}}
+                            {{#if @last}}
+                                <a href="{{#if ../user}}/main/tag/{{this}}{{else}}/home/tag/{{this}}{{/if}}" class="text-primary text-decoration-none">{{this}}</a>
+                            {{else}}
+                                <a href="{{#if ../user}}/main/tag/{{this}}{{else}}/home/tag/{{this}}{{/if}}" class="text-primary text-decoration-none">{{this}}, </a>
+                            {{/if}}
+                        {{/each}}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download PDF Section -->
+        <div class="container-fluid mb-4 text-center">
+            <button class="btn btn-secondary" id="download-pdf">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf" viewBox="0 0 16 16">
+                    <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h6.5L14 4.5zm-3 .5V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5h-3z"/>
+                    <path d="M5.5 6v4h1V8h1v2h1V8h1V6h-1v2h-1V6h-1v2h-1V6h-1zm7.979.93l-.64.192A.498.498 0 0 0 13 7.5a.5.5 0 0 0-.5.5.5.5 0 0 0 .146.354l.146.146a.5.5 0 0 0 .354.146.5.5 0 0 0 .5-.5c0-.11-.01-.208-.03-.308l-.38-.192c-.018-.012-.035-.024-.053-.036z"/>
+                </svg>
+                Download PDF
+            </button>
+        </div>
+
+    </article>
+
+    <!-- Comment Section -->
+
+    <h3 class="mb-3 font-weight-bold">Bình luận</h3>
+    {{#each comments}}
+    <div class="card shadow-sm mb-2">
+        <div class="card-body">
+            <p class="font-weight-bold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                </svg>
+                &nbsp;
+                {{#if this.penName}}{{this.penName}}{{else}}{{this.username}}{{/if}}
+            </p>
+            <p>{{this.content}}</p>
+            <p class="text-muted">{{this.commentDate}}</p>
+        </div>
+    </div>
+    {{/each}}
+
+    <h3 class="mb-3 font-weight-bold">Viết bình luận</h3>
+    <div class="card shadow-sm mb-5">
+        <div class="card-body">
+            <form action="/main/post/{{post.id}}/comment" method="POST" id="comment-form">
+                <div class="form-group mb-3">
+                    <label for="content" class="form-label font-weight-bold">Nội dung</label>
+                    <textarea id="content" name="content" class="form-control" rows="3" placeholder="Viết bình luận của bạn..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"> Bình luận</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="related-posts mt-5">
+    <h3 class="mb-4 font-weight-bold text-center text-secondary">Bài viết liên quan (Category)</h3>
+    {{#if relatedPosts}}
+    <ul class="list-unstyled">
+        {{#each relatedPosts}}
+        <li class="media mb-4 p-3 shadow-sm bg-light rounded">
+            <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="{{this.title}}" class="img-thumbnail mr-3" style="width: 100px; height: 100px; object-fit: cover;">
+            <div class="media-body">
+                    <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-primary">
+                        {{this.title}}
+                <p class="text-muted mb-0">{{this.abstract}}</p>
+                <p class="text-muted mb-0">Tag: {{this.tags}}</p>
+                </a>
+            </div>
+        </li>
+        {{/each}}
+    </ul>
+    {{else}}
+    <div class="alert alert-info text-center" role="alert">
+        Chưa có bài viết liên quan.
+    </div>
+    {{/if}}
+</div>
+
+<!-- Back Button -->
+<div class="text-center mt-4">
+    <a href="{{#if user}}/main{{else}}/home{{/if}}" class="btn btn-success btn-lg shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+        </svg>
+        &nbsp; Back to main page
+    </a>
+</div>
+
+</div>

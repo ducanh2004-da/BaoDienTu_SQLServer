@@ -1,0 +1,107 @@
+<main class="container-fluid">
+    <!-- Hiển thị bài viết theo danh mục -->
+    <div id="container" class="row d-flex justify-content-center">
+        <div id="main-news" class="col-md-9">
+            <div class="container mt-4">
+                <h4 class="mb-3 text-primary">Bài viết thuộc danh mục {{title}}</h4>
+                {{#if posts.length}}
+                    <div class="row">
+                        {{#each posts}}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
+                                        <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" class="card-img-top" alt="{{this.title}}">
+                                    </a>
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                                {{this.title}}
+                                            </a>
+                                        </h5>
+                                        <p class="card-text truncate-multi-line">{{this.abstract}}</p>
+                                        <p class="card-text"><small class="text-muted">Ngày đăng: {{this.publish_date}}</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                {{else}}
+                    <p class="text-muted">Không có bài viết nào trong danh mục này.</p>
+                {{/if}}
+            </div>
+            <!-- Pagination -->
+    <nav aria-label="...">
+        <ul class="pagination">
+            {{#if pages.length}}
+                {{#if (ifCond currentPage "==" '1')}}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {{else}}
+                    <li class="page-item">
+                        <a class="page-link" href="{{#if user}}/main{{else}}/home{{/if}}/category/{{id}}/?page={{math currentPage "-" 1}}">Previous</a>
+                    </li>
+                {{/if}}
+                {{#each pages}}
+                    {{#if (ifCond this.value "==" ../currentPage)}}
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{this.value}}</span>
+                        </li>
+                    {{else}}
+                        <li class="page-item">
+                            <a class="page-link" href="{{#if ../user}}/main{{else}}/home{{/if}}/category/{{../id}}/?page={{this.value}}">{{this.value}}</a>
+                        </li>
+                    {{/if}}
+                {{/each}}
+                {{#if (ifCond currentPage "==" totalPages)}}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                {{else}}
+                    <li class="page-item">
+                        <a class="page-link" href="{{#if user}}/main{{else}}/home{{/if}}/category/{{id}}/?page={{math currentPage "+" 1}}">Next</a>
+                    </li>
+                {{/if}}
+            {{else}}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">1</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {{/if}}
+        </ul>
+    </nav>
+        </div>
+
+        <!-- Sidebar hiển thị danh mục hoặc bài viết nổi bật -->
+        <div id="sidebar-news" class="col-md-3">
+            <div class="container mt-4">
+                <h5 class="text-primary">Tin nổi bật</h5>
+                {{#each hotPosts}}
+                    <div class="card mb-3">
+                        <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
+                            <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="{{this.title}}" class="card-img-top">
+                        </a>
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                    {{this.title}}
+                                </a>
+                            </h6>
+                            <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                <p class="card-text truncate-multi-line w-100">
+                                    {{this.abstract}}
+                                </p>
+                            </a>
+                            <p class="card-text"><small class="text-muted">Lượt xem: {{this.views}}</small></p>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</main>

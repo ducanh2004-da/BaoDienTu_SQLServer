@@ -1,0 +1,56 @@
+<main class="container-fluid my-4" id="main-content">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-pills nav-fill my-3">
+        <li class="nav-item">
+            <a href="/editor/article?statusName=Approved" class="text-decoration-none" data-status="Approved">Đã duyệt và chờ xuất bản</a>
+        </li>
+        <li class="nav-item">
+            <a href="/editor/article?statusName=Published" class="text-decoration-none" data-status="Published">Đã đăng</a>
+        </li>
+        <li class="nav-item">
+            <a href="/editor/article?statusName=Rejected" class="text-decoration-none" data-status="Rejected">Bị từ chối</a>
+        </li>
+        <li class="nav-item">
+            <a href="/editor/article?statusName=Pending-Approval" class="text-decoration-none" data-status="Pending-Approval">Chưa được duyệt</a>
+        </li>
+    </ul>
+
+    <!-- Articles List -->
+    {{#if articles.length}}
+        <div class="container-fluid py-3 bg-light rounded-lg">
+            {{#each articles}}
+                <div class="card mb-3">
+                    <div class="row no-gutters">
+                        <div class="col-md-2 text-center">
+                            <img src="/public/posts/imgs/{{id}}/thumbnail.jpg" alt="{{title}}" class="img-fluid rounded-left" style="height: 100%; object-fit: cover;" >
+                        </div>
+                        <div class="col p-4 d-flex flex-column">
+                            <h2 class="card-title">{{title}}</h2>
+                            <p class="card-text">Chuyên mục: {{categoryName}}</p>
+                            <p class="card-text">Tác giả: <strong>{{userName}}</strong></p>
+                            <p class="card-text"><small class="text-muted">Ngày đăng: {{publish_date}}</small></p>
+                            <p class="card-text">
+                                Tình trạng:&nbsp;
+                                {{#if (eq statusName "Published")}}
+                                    <span class="badge badge-success">{{statusName}}</span>
+                                {{else if (eq statusName "Approved")}}
+                                    <span class="badge badge-warning">{{statusName}}</span>
+                                {{else if (eq statusName "Rejected")}}
+                                    <span class="badge badge-danger">{{statusName}}</span>
+                                {{else}}
+                                    <span class="badge badge-info">{{statusName}}</span>
+                                {{/if}}
+                            </p>
+                        </div>
+                        {{#if (eq statusName "Pending-Approval")}}
+                            <div class="col-md-1 d-flex flex-column justify-content-center">
+                                <a href="/editor/article-review?id={{id}}" class="text-decoration-none">Chỉnh sửa</a>
+                            </div>
+                        {{/if}}
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{/if}}
+</main>
+

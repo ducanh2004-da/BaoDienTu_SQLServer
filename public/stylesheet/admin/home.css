@@ -1,0 +1,111 @@
+:root {
+    --primary-color: #3b82f6;
+    --secondary-color: #6b7280;
+    --background-light: #f3f4f6;
+    --text-color: #1f2937;
+}
+
+body {
+    font-family: 'Inter', 'Arial', sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-color);
+}
+
+.sidebar {
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.sidebar h2 {
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.sidebar h2 i {
+    color: var(--primary-color);
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 10px;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: var(--text-color);
+    padding: 10px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.sidebar nav ul li a:hover, .sidebar nav ul li a.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.sidebar nav ul li a i {
+    margin-right: 10px;
+}
+
+.content {
+    margin-left: 250px;
+    padding: 20px;
+    background-color: var(--background-light);
+    min-height: 100vh;
+}
+
+.greeting-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section {
+    display: none;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section.active {
+    display: block;
+}
+
+.post-card {
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-filter {
+    margin-bottom: 20px;
+}

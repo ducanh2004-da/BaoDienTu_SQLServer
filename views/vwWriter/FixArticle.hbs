@@ -1,0 +1,244 @@
+{{#section "css"}}
+    <link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{{/section}}
+
+{{#section 'js'}}
+    <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.0/js/fileinput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.0/js/locales/vi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.0/themes/fa4/theme.min.js"></script>
+    <script src="https://cdn.tiny.cloud/1/0su44cyz9o7c5h25fgma5227lueuup5jenu9qrhfmid4kdqh/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script>
+        // Initialize TinyMCE
+        tinymce.init({
+            selector: '#content',
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+            toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | removeformat',
+            height: 300,
+            menubar: false,
+            statusbar: false,
+            setup: function (editor) {
+                editor.on('change', function () {
+                    editor.save();
+                });
+            }
+        });
+        // Preview functionality
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("#edit-article-form");
+
+            form.addEventListener("submit", (event) => {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Get all the tags
+                const tags = getAllTags();
+
+                // Create a hidden input to store the tags
+                const tagsInput = document.createElement("input");
+                tagsInput.type = "hidden";
+                tagsInput.name = "tags";
+                tagsInput.value = tags.join(",");
+
+                // Append the hidden input to the form
+                form.appendChild(tagsInput);
+
+                // Print the form data to the console
+                const formData = new FormData(form);
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ": " + pair[1]);
+                }
+
+                // Submit the form programmatically
+                form.submit();
+            });
+
+            const previewButton = document.getElementById("preview");
+
+            previewButton.addEventListener("click", () => {
+                const title = document.getElementById("title").value;
+                const abstract = document.getElementById("abstract").value;
+                const content = tinymce.get("content").getContent();
+                const categories = Array.from(document.getElementById("category").selectedOptions);
+                const tags = getAllTags();
+                const updateDate = new Date().toLocaleDateString();
+                const authorName = `{{user.username}}`;
+                console.log("Preview button clicked");
+
+                // Get the image uploaded path
+                const thumbnailFile = document.getElementById("thumbnail").files[0];
+                let thumbnailURL = "";  // Default empty URL
+
+                if (thumbnailFile) {
+                    // Generate temporary object URL for the selected file
+                    thumbnailURL = URL.createObjectURL(thumbnailFile);
+                }
+                else {
+                    thumbnailURL = "/public/posts/imgs/{{article.id}}/thumbnail.jpg";
+                }
+
+                const views = 0;  // Placeholder for views count
+                const likes = 0;  // Placeholder for likes count
+
+                openPreviewWindow({title, abstract, thumbnailURL, content, categories, views, likes, authorName, updateDate, tags});
+            });
+        });
+    </script>
+
+    <script>
+        const imagePath = "/public/posts/imgs/{{article.id}}/thumbnail.jpg";
+        $("#thumbnail").fileinput({
+            dropZoneEnabled: false,
+            showUpload: false,
+            showCaption: true,
+            fileActionSettings: {
+                showZoom: false,
+                showDrag: true,
+            },
+            overwriteInitial: false,
+            maxFileCount: 1,
+            allowedFileExtensions: ["jpg"],
+            maxFileSize: 2000,
+            theme: "fa4",
+            language: "vi",
+            initialPreview: [
+                `<img src="${imagePath}" class="file-preview-image">`
+            ],
+            initialPreviewConfig: [
+                {caption: "thumbnail.jpg", width: "1000px", width: "100%", // Make the image take up the full width of the container
+                    height: "auto", key: 1}
+            ]
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const fileInput = document.getElementById("thumbnail");
+            const form = document.getElementById("edit-article-form");
+
+            // Check if there's an initial preview
+            const initialPreviewExists = document.querySelector(".file-preview-image");
+
+            if (initialPreviewExists) {
+                // Remove `required` if there's an initial preview
+                fileInput.removeAttribute("required");
+            }
+
+            // Listen for changes in the file input
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files.length > 0) {
+                    // Remove `required` when a file is selected
+                    fileInput.removeAttribute("required");
+                } else if (!initialPreviewExists) {
+                    // Reapply `required` if no initial preview and no file selected
+                    fileInput.setAttribute("required", "required");
+                }
+            });
+
+            // Before form submission, ensure validation matches the input state
+            form.addEventListener("submit", (event) => {
+                if (!initialPreviewExists && fileInput.files.length === 0) {
+                    alert("Please upload a file."); // Optional: Display user-friendly message
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+{{/section}}
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sidebar">
+    <button class="sidebar-toggle-btn" id="toggle-sidebar" aria-label="Toggle Sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+        </svg>
+    </button>
+    <nav class="nav flex-column p-4">
+        <a class="nav-link text-white glow-on-hover" href="./post-article">Viết bài mới&nbsp;
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
+                <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"/>
+            </svg>
+        </a>
+        <a class="nav-link text-white glow-on-hover" href="./my-articles">Bài viết của tôi&nbsp;
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-text-fill" viewBox="0 0 16 16">
+                <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1z"/>
+            </svg>
+        </a>
+    </nav>
+</div>
+
+<main class="container my-4">
+    <form action="/writer/fix-article/submit?id={{article.id}}" method="POST" enctype="multipart/form-data" id="edit-article-form">
+    <div class="form-group">
+        <label for="title">Tiêu đề bài viết</label>
+        <input type="text" class="form-control" id="title" name="title" value="{{article.title}}" required/>
+    </div>
+
+    <div class="form-group">
+        <label for="thumbnail">Ảnh nền</label>
+        <input type="file" class="file form-control-file" id="thumbnail" name="thumbnail" required/>
+    </div>
+
+    <div class="form-group">
+        <label for="abstract">Tóm tắt</label>
+        <textarea class="form-control" id="abstract" name="abstract" required>{{article.abstract}}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="content">Nội dung</label>
+        <textarea class="form-control" id="content" name="content" required>{{{article.content}}}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="category">Chuyên mục</label>
+        <select class="form-control" id="category" name="category[]" required multiple="multiple">
+            <option value="" disabled>Chọn chuyên mục</option>
+            {{#each categories}}
+                <optgroup label="{{this.name}}">
+                    {{#if (length this.children)}}
+                        {{#each this.children}}
+                            {{#if (includes ../../postCategories this)}}
+                                <option value="{{this.id}}" selected>{{this.name}}</option>
+                            {{else}}
+                                <option value="{{this.id}}">{{this.name}}</option>
+                            {{/if}}
+                        {{/each}}
+                    {{/if}}
+                </optgroup>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="tag-input">Tags</label>
+        <div class="input-group">
+            <input type="text" id="tag-input" class="form-control" placeholder="Nhập với một tag" aria-label="Nhập với một tag" aria-describedby="add-tag-btn"/>
+            <div class="input-group-append">
+                <button id="add-tag-btn" class="btn btn-primary" type="button">Thêm tag</button>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div id="tag-container" class="tag-container border rounded p-3">
+            {{#each tags}}
+                <div class="tag">
+                    <span>{{this}}</span><span class="remove-tag">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"></path>
+                    </svg></span>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+<!--    is premium post-->
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="is_premium" name="is_premium" {{#if article.premium}}checked{{/if}}>
+        <label class="form-check-label" for="is_premium">Bài Viết Premium</label>
+    </div>
+
+    <div class="d-flex justify-content-center">
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="submit" class="btn btn-primary">Lưu</button>
+            <a href="/writer" class="btn btn-secondary">Hủy</a>
+            <button type="button" class="btn btn-success" id="preview">Xem trước</button>
+        </div>
+    </div>
+    </form>
+</main>

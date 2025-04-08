@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Điều Khiển Quản Trị</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheet/admin/home.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h2><i class="fas fa-chart-pie"></i>Bảng Điều Khiển</h2>
+        <nav>
+            <ul>
+                <li><a class="btn-toggle" data-target="#posts-section" href="#"><i class="fas fa-newspaper"></i>Quản lý bài viết</a></li>
+                <li><a class="btn-toggle" data-target="#categories-section" href="#"><i class="fas fa-tags"></i>Chuyên mục</a></li>
+                <li><a class="btn-toggle" data-target="#users-section" href="#"><i class="fas fa-users"></i>Danh sách người dùng</a></li>
+                <li><a class="btn-toggle" data-target="#tag-section" href="#"><i class="fas fa-tags"></i>Quản lý các nhãn</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+        <div class="greeting-container">
+            <div>
+                <h4>Chào mừng, <span>{{user.username}}</span>!</h4>
+            </div>
+            <div>
+                <a href="api/logout" class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            </div>
+        </div>
+
+        <!-- Quản lý bài viết -->
+        <section id="posts-section" class="section">
+            <h2>Quản lý bài viết</h2>
+            <div class="btn-group btn-filter mb-3">
+                <button class="btn btn-outline-primary" onclick="filterPosts('all')">Tất cả</button>
+                <button class="btn btn-outline-success" onclick="filterPosts('Published')">Đã duyệt</button>
+                <button class="btn btn-outline-warning" onclick="filterPosts('Approved')">Chưa duyệt</button>
+                <button class="btn btn-outline-danger" onclick="filterPosts('Pending-Approval')">Chưa chấp nhận</button>
+            </div>
+            <div class="post-list">
+                {{#each posts}}
+                <div class="card post-card {{this.statusName}}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{this.title}}</h5>
+                        <p class="card-text text-muted">Trạng thái: {{this.statusName}}</p>
+                        <p>{{this.abstract}}</p>
+                        <div class="d-flex gap-2">
+                            <form action="/admin/post/{{this.id}}/accept" method="POST">
+                                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Duyệt</button>
+                            </form>
+                            <form action="/admin/post/{{this.id}}/notaccept" method="POST">
+                                <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Không Duyệt</button>
+                            </form>
+                            <a href="/admin/post/detail" class="btn btn-info"><i class="fas fa-eye"></i> Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+
+        <!-- Chuyên mục -->
+        <section id="categories-section" class="section">
+            <h2>Quản lý chuyên mục</h2>
+<div class="category-list">
+    {{#if categories}}
+        {{#each parentCat}}
+            <div class="card mb-3 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title mb-0">{{this.name}}</h5>
+                </div>
+            </div>
+            {{#each ../categories}}
+                {{#ifEquals this.parent_id ../this.id}}
+                    <div class="card mb-3 border-danger ms-3">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">{{this.name}}</h5>
+                            <div class="d-flex gap-2">
+                                <a href="/admin/category/{{this.id}}/edit" class="btn btn-sm btn-info">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <form action="/admin/category/{{this.id}}/delete" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {{/ifEquals}}
+            {{/each}}
+        {{/each}}
+    {{else}}
+        <p class="text-center text-muted">Hiện tại không có danh mục nào.</p>
+    {{/if}}
+    <a href="/admin/category/create" class="btn btn-primary mt-3">
+        <i class="fas fa-plus"></i> Thêm mới
+    </a>
+</div>
+
+</div>
+        </section>
+
+        <!-- Danh sách người dùng -->
+        <section id="users-section" class="section">
+            <h2>Danh sách người dùng</h2>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên</th>
+                                <th>Email</th>
+                                <th>Vai trò</th>
+                                <th>Chức năng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each users}}
+                            <tr>
+                                <td>{{this.id}}</td>
+                                <td>{{this.username}}</td>
+                                <td>{{this.email}}</td>
+                                <td>{{this.role}}</td>
+                                <td><a href="/admin/{{this.id}}/detailUser" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> Xem</a></td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+         <!-- Quản lý Tag -->
+        <section id="tag-section" class="section">
+            <h2>Quản lý Tag</h2>
+            {{#each posts}}
+            <div class="card">
+                <div class="card mb-3 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">{{this.tags}}</h5>
+                </div>
+              </div> 
+            </div>
+            {{/each}}
+        </section>
+    </main>
+
+    <script>
+        document.querySelectorAll('.btn-toggle').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+               
+                document.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
+              
+                this.classList.add('active');
+
+                const target = document.querySelector(this.getAttribute('data-target'));
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                target.classList.add('active');
+            });
+        });
+
+        function filterPosts(status) {
+            document.querySelectorAll('.post-card').forEach(post => {
+                post.style.display = status === 'all' || post.classList.contains(status) ? 'block' : 'none';
+            });
+        }
+
+        // Activate the first section by default
+        document.querySelector('.btn-toggle[data-target="#posts-section"]').click();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

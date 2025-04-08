@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="/favicon/manifest.json">
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Điện Tử - Đăng Nhập</title>
+  <link rel="stylesheet" href="/stylesheet/form.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="site-title">
+        <a href="/" class="text-decoration-none">
+          <h1 class="h1 text-center font-weight-bold mb-4">Báo Điện Tử</h1>
+        </a>
+    </div>
+
+    <div class="message-container">
+      {{#if success_msg}}
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> {{success_msg}}
+      </div>
+      {{/if}}
+
+      {{#if error_msg}}
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> {{error_msg}}
+      </div>
+      {{/if}}
+    </div>
+
+    <h5 class="text-center">Đăng nhập với vai trò?</h5>
+    <div class="role-switcher mt-3">
+      <a href="#" id="switch-to-sub"><i class="fas fa-user"></i> Subscriber</a>
+      <a href="#" id="switch-to-writer"><i class="fas fa-pen"></i> Writer</a>
+      <a href="#" id="switch-to-editor"><i class="fas fa-edit"></i> Editor</a>
+      <a href="#" id="switch-to-admin"><i class="fas fa-user-shield"></i> Admin</a>
+    </div>
+    <br>
+    <!-- Form đăng nhập Subscriber -->
+    <form action="/api/login" method="POST" class="form role-form" id="sub-login-form">
+      <h3 class="text-center mb-4">Đăng Nhập Subscriber</h3>
+      <input type="email" name="email" class="form-control" id="sub-login-email" placeholder="Email" required>
+      <input type="password" name="password" class="form-control" id="sub-login-password" placeholder="Mật khẩu" required>
+      <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+      <div class="text-center mt-3">
+        <a href="/api/forgot-password" class="text-muted">Quên mật khẩu?</a>
+      </div>
+    </form>
+
+    <!-- Form đăng nhập Writer -->
+    <form action="/api/login-writer" method="POST" class="form role-form" id="writer-login-form" style="display:none;">
+      <h3 class="text-center mb-4">Đăng Nhập Writer</h3>
+      <input type="email" name="email" class="form-control" id="writer-login-email" placeholder="Email" required>
+      <input type="password" name="password" class="form-control" id="writer-login-password" placeholder="Mật khẩu" required>
+      <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+      <div class="text-center mt-3">
+        <a href="/api/forgot-password" class="text-muted">Quên mật khẩu?</a>
+      </div>
+    </form>
+
+    <!-- Form đăng nhập Editor -->
+    <form action="/api/login-editor" method="POST" class="form role-form" id="editor-login-form" style="display:none;">
+      <h3 class="text-center mb-4">Đăng Nhập Editor</h3>
+      <input type="email" name="email" class="form-control" id="editor-login-email" placeholder="Email" required>
+      <input type="password" name="password" class="form-control" id="editor-login-password" placeholder="Mật khẩu" required>
+      <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+      <div class="text-center mt-3">
+        <a href="/api/forgot-password" class="text-muted">Quên mật khẩu?</a>
+      </div>
+    </form>
+
+    <!-- Form đăng nhập Admin -->
+    <form action="/api/login-admin" method="POST" class="form role-form" id="admin-login-form" style="display:none;">
+      <h3 class="text-center mb-4">Đăng Nhập Admin</h3>
+      <input type="email" name="email" class="form-control" id="admin-login-email" placeholder="Email" required>
+      <input type="password" name="password" class="form-control" id="admin-login-password" placeholder="Mật khẩu" required>
+      <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+      <div class="text-center mt-3">
+        <a href="/api/forgot-password" class="text-muted">Quên mật khẩu?</a>
+      </div>
+    </form>
+
+    <!-- Form đăng ký -->
+    <form action="/api/register" method="POST" class="form" id="register-form" style="display:none;">
+      <h3 class="text-center mb-4">Đăng Ký</h3>
+      <input type="text" name="username" class="form-control" id="register-username" placeholder="Tên người dùng" required>
+      <input type="email" name="email" class="form-control" id="register-email" placeholder="Email" required>
+      <input type="password" name="password" class="form-control" id="register-password" placeholder="Mật khẩu" required>
+      <input type="text" name="birthday" class="form-control" id="register-birthday" placeholder="Ngày sinh" required>
+      <button type="submit" class="btn btn-primary">Đăng Ký</button>
+    </form>
+  
+
+    <div class="form-switch-link">
+      <span id="switch-regis"><div style="color:black;">Chưa có tài khoản?</div> Đăng ký ngay</span>
+      <span id="switch-log" style="display:none;"><div style="color:black;">Đã có tài khoản?</div> Đăng nhập</span>
+    </div>
+    <div class="social-login">
+      {{!-- <a href="/api/github"><i class="fab fa-github"></i></a> --}}
+      Đăng nhập với : <a href="/api/google"><i class="fab fa-google"></i></a>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+  <script>
+    const forms = {
+      subForm: document.getElementById('sub-login-form'),
+      writerForm: document.getElementById('writer-login-form'),
+      editorForm: document.getElementById('editor-login-form'),
+      adminForm: document.getElementById('admin-login-form'),
+      registerForm: document.getElementById('register-form')
+    };
+
+    function hideAllForms() {
+      Object.values(forms).forEach(form => form.style.display = 'none');
+      document.getElementById('switch-regis').style.display = 'block';
+      document.getElementById('switch-log').style.display = 'none';
+    }
+
+    function showForm(formName) {
+      hideAllForms();
+      if (forms[formName]) {
+        forms[formName].style.display = 'block';
+        
+        if (formName === 'registerForm') {
+          document.getElementById('switch-regis').style.display = 'none';
+          document.getElementById('switch-log').style.display = 'block';
+        }
+      }
+    }
+
+    showForm('subForm');
+
+    const switchLinks = {
+      'switch-regis': 'registerForm',
+      'switch-log': 'subForm',
+      'switch-to-sub': 'subForm',
+      'switch-to-writer': 'writerForm',
+      'switch-to-editor': 'editorForm',
+      'switch-to-admin': 'adminForm'
+    };
+
+    document.addEventListener('click', function(event) {
+      const target = event.target;
+      if (target && target.id in switchLinks) {
+        event.preventDefault();
+        const formToShow = switchLinks[target.id];
+        showForm(formToShow);
+      }
+    });
+
+    $(document).ready(function() {
+      $('#register-birthday').datetimepicker({
+        timepicker: false,
+        format: 'd/m/Y',
+        mask: true
+      });
+    });
+
+   
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.classList.add('snowflake');
+      snowflake.innerHTML = '❄️'; 
+      snowflake.style.left = Math.random() * 100 + 'vw';
+      snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+      snowflake.style.opacity = Math.random();
+      snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+      
+      document.body.appendChild(snowflake);
+
+    
+      setTimeout(() => {
+        snowflake.remove();
+      }, 5000);
+    }
+
+   
+    function startSnowEffect() {
+      const snowflakeInterval = setInterval(() => {
+        createSnowflake();
+      }, 50);
+
+     
+      setTimeout(() => {
+        clearInterval(snowflakeInterval);
+      }, 5000);
+    }
+
+  
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        startSnowEffect();
+      
+        setTimeout(() => {
+          this.submit();
+        }, 5000);
+      });
+    });
+  </script>
+</body>
+</html>

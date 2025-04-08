@@ -1,0 +1,80 @@
+<main class="container-fluid m-4">
+    <!-- Hiển thị bài viết theo danh mục -->
+    <div id="main-news">
+        <div>
+            <h4 class="mb-3 text-primary">Bài viết thuộc tag {{title}}</h4>
+            {{#if posts.length}}
+                <div class="row">
+                    {{#each posts}}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
+                                    <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" class="card-img-top" alt="{{this.title}}">
+                                </a>
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                            {{this.title}}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text truncate-multi-line">{{this.abstract}}</p>
+                                    <p class="card-text"><small class="text-muted">Ngày đăng: {{this.publish_date}}</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            {{else}}
+                <p class="text-muted">Không có bài viết nào trong tag này.</p>
+            {{/if}}
+        </div>
+        <!-- Pagination -->
+    <nav aria-label="...">
+    <ul class="pagination">
+        {{#if pages.length}}
+            {{#if (ifCond currentPage "==" 1)}}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            {{else}}
+                <li class="page-item">
+                    <a class="page-link" href="{{#if user}}/main{{else}}/home{{/if}}/tag/{{query}}?page={{math currentPage "-" 1}}">Previous</a>
+                </li>
+            {{/if}}
+
+            {{#each pages}}
+                {{#if (ifCond this.value "==" ../currentPage)}}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{this.value}}</span>
+                    </li>
+                {{else}}
+                    <li class="page-item">
+                        <a class="page-link" href="{{#if ../user}}/main{{else}}/home{{/if}}/tag/{{../query}}?page={{this.value}}">{{this.value}}</a>
+                    </li>
+                {{/if}}
+            {{/each}}
+
+            {{#if (ifCond currentPage "==" totalPages)}}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {{else}}
+                <li class="page-item">
+                    <a class="page-link" href="{{#if user}}/main{{else}}/home{{/if}}/tag/{{query}}?page={{math currentPage "+" 1}}">Next</a>
+                </li>
+            {{/if}}
+        {{else}}
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">1</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+        {{/if}}
+    </ul>
+</nav>
+    </div>
+</main>

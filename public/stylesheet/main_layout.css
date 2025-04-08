@@ -1,0 +1,145 @@
+* {
+    font-family: "Hubot Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-variation-settings:
+            "wdth" 100;
+}
+
+#featured-news {
+    width: 100%;
+}
+
+.card-img {
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.truncate-3-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.truncate-2-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.row .vertical-divider {
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    #sidebar-news {
+        position: relative;
+        top: 0;
+        right: 0;
+        width: 25%;
+        height: 100%;
+        overflow-y: auto; /* Add scroll if content overflows */
+        padding-top: 20px;
+    }
+
+    .row .vertical-divider > div[class^="col-"] + div[class^="col-"] {
+        text-align: center;
+        padding-bottom: 100px;
+        margin-bottom: -100px;
+        border-left: 3px solid #F0F0F0;
+
+    }
+
+    .row .vertical-divider > div[class^="col-"]:first-child {
+        border-left: none;
+    }
+
+    .row .vertical-divider > div[class^="col-"]:last-child {
+        border-right: none;
+    }
+}
+
+/* Show dropdown on hover */
+
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+/* Remove the default toggle icon */
+
+.nav-link {
+    white-space: nowrap;
+}
+/* Ensure dropdown closes properly when the mouse leaves */
+
+.nav-item.dropdown .dropdown-menu {
+    display: none;
+    position: absolute; /* Ensures proper positioning */
+    margin-top: 0.5rem; /* Adjust spacing between link and dropdown */
+}
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    z-index: 1000; /* Ensure it appears above other content */
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Add smooth fade-in effect */
+@keyframes fadeIn {
+from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* <==================== Slider ====================> */
+.slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    transition: transform 0.3s ease-in-out;
+    z-index: 0;
+    border-radius: 5px;
+}
+
+#sidebar-header .button {
+    flex: 1;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    z-index: 1;
+    font-size: 16px;
+    user-select: none;
+    background-color: transparent;
+}
+
+#sidebar-header {
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#sidebar-header .inactive {
+    color: black;
+}
+
+#sidebar-header .active {
+    color: white;
+}

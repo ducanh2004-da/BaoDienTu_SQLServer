@@ -1,0 +1,41 @@
+<div class="container">
+    <div class="card mx-auto mt-5 shadow" style="max-width: 800px;">
+        <div class="card-body">
+            <h2 class="text-center mb-4">Edit Profile</h2>
+
+            <!-- Form Section -->
+            <form action="../profile/update" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" value="{{user.username}}">
+                </div>
+
+                <div class="form-group">
+                    <label for="penName">Pen Name</label>
+                    <input type="text" id="penName" name="penName" class="form-control" value="{{user.penName}}">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{user.email}}">
+                </div>
+
+                <div class="form-group">
+                    <label for="birthday">Birthday</label>
+                    <input type="date" id="birthday" name="birthday" class="form-control" value="{{user.birthday}}">
+                </div>
+                <div class="mb-3">
+                    <h4>Upload Avatar</h4>
+                    <input type="file" name="image">
+                </div>
+
+                <button type="submit" class="btn btn-success btn-block btn-lg mt-3">Update Profile</button>
+            </form>
+
+            <!-- Cancel Button -->
+            <div class="text-center mt-3">
+                <a href="../profile" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>

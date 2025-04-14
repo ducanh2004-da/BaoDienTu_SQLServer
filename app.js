@@ -3,7 +3,7 @@ const { engine } = require("express-handlebars");
 const hbs_sections = require("express-handlebars-sections");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
-const passport = require("passport");
+// const passport = require("passport");
 const session = require("express-session");
 const flash = require("connect-flash");
 const bodyParser = require("body-parser");
@@ -15,16 +15,17 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const authMiddleware = require('./middlewares/auth.js')
 const { updateScheduledPosts } = require('./middlewares/publishPost.js');
+const { connectDB } = require("./utils/db");
 
 // Routes
-const mainRoutes = require("./routes/main");
-const authRoutes = require("./routes/auth");
-const adminRoutes = require("./routes/admin");
-const editorRoutes = require("./routes/editor.js");
+// const mainRoutes = require("./routes/main");
+// const authRoutes = require("./routes/auth");
+// const adminRoutes = require("./routes/admin");
+// const editorRoutes = require("./routes/editor.js");
 const homeRoutes = require("./routes/home.js");
-const writerRoutes = require("./routes/writer.js");
+// const writerRoutes = require("./routes/writer.js");
 
-require("./config/passport"); // Passport configuration should be required here
+// require("./config/passport"); // Passport configuration should be required here
 
 dotenv.config(); // Load environment variables from .env file
 const PORT = process.env.PORT || 5000;
@@ -183,8 +184,8 @@ app.use(
 );
 
 // // Passport initialization
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 app.use(express.json());
 // // Flash messages middleware
 app.use(flash());
@@ -196,27 +197,27 @@ app.use((req, res, next) => {
 });
 
 // Redirect based on user role
-app.get("/", (req, res) => {
-    if (!req.session.user) {
-        return res.redirect("/home");
-    } else if (req.session.user.role === "admin") {
-        return res.redirect("/admin");
-    } else if (req.session.user.role === "editor") {
-        return res.redirect("/editor");
-    } else if (req.session.user.role === "writer") {
-        return res.redirect("/writer");
-    } else {
-        return res.redirect("/main");
-    }
-});
+// app.get("/", (req, res) => {
+//     if (!req.session.user) {
+//         return res.redirect("/home");
+//     } else if (req.session.user.role === "admin") {
+//         return res.redirect("/admin");
+//     } else if (req.session.user.role === "editor") {
+//         return res.redirect("/editor");
+//     } else if (req.session.user.role === "writer") {
+//         return res.redirect("/writer");
+//     } else {
+//         return res.redirect("/main");
+//     }
+// });
 
 // Define routes
-app.use("/main", authMiddleware.isSubscriber, mainRoutes);
-app.use("/writer", authMiddleware.isWriter, writerRoutes);
-app.use("/editor", authMiddleware.isEditor, editorRoutes);
+// app.use("/main", authMiddleware.isSubscriber, mainRoutes);
+// app.use("/writer", authMiddleware.isWriter, writerRoutes);
+// app.use("/editor", authMiddleware.isEditor, editorRoutes);
 app.use("/home", homeRoutes);
-app.use("/api",loginLimiter, authRoutes);
-app.use("/admin", authMiddleware.isAdmin, adminRoutes);
+// app.use("/api",loginLimiter, authRoutes);
+// app.use("/admin", authMiddleware.isAdmin, adminRoutes);
 
 app.use((err, req, res, next) => {
     console.error('Lỗi xảy ra:', err); // Ghi nhật ký lỗi đầy đủ để dễ gỡ lỗi
@@ -224,6 +225,10 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port http://localhost:${PORT}`);
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`✅ Server chạy tại http://localhost:${PORT}/home`);
+    });
+}).catch(err => {
+    console.error("❌ Không thể kết nối database. Dừng server.");
 });

@@ -1,45 +1,30 @@
-// const mysql = require('mysql2');
-// const dotenv = require('dotenv');
+const sql = require('mssql');
+require('dotenv').config();
 
-// dotenv.config();
+const config = {
+    server: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    options: {
+        
+        trustServerCertificate:true,
+        trustedConnection:false,
+        enableArithAbort:true,
+        instancename:"SQLEXPRESS"
+    },
+    port:1433,
+};
 
-// const db = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD,
-//     database: process.env.DB_NAME
-// })
+async function connectDB() {
+    try {
+        const pool = await sql.connect(config);
+        console.log("✅ Kết nối SQL Server thành công!");
+        return pool;
+    } catch (err) {
+        console.error("❌ Lỗi kết nối SQL Server:", err);
+        throw err;
+    }
+}
 
-// db.connect((err)=>{
-//     if(err) throw err;
-//     console.log('Kết nối thành công DB');
-// })
-
-// module.exports = db;
-
-const mysql = require("mysql2");
-const dotenv = require("dotenv");
-
-dotenv.config();
-
-// Tạo connection pool thay vì một kết nối đơn
-const db = mysql.createPool({
-  host: "127.0.0.1",
-  port: 3306,
-  user: "root",
-  password: "",
-  database: "baodientu",
-  // Không giới hạn số lượng truy vấn trong hàng đợi
-});
-
-// Kiểm tra kết nối đến MySQL
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("Lỗi kết nối DB:", err);
-    throw err;
-  }
-  console.log("Kết nối thành công DB");
-  connection.release(); // Giải phóng kết nối sau khi kiểm tra
-});
-
-module.exports = db;
+module.exports = { connectDB, sql };

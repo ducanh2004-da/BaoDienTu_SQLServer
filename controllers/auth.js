@@ -37,27 +37,90 @@ module.exports.Register = (req, res) => {
   });
 };
 
-// Common login handler
-function handleLogin(req, res, next, redirectPath) {
+module.exports.Login = (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
-    if (err) return next(err);
+    if (err) {
+      return next(err);
+    }
     if (!user) {
       req.flash("error_msg", "Tên đăng nhập hoặc mật khẩu không đúng");
       return res.redirect("/api");
     }
     req.logIn(user, (err) => {
-      if (err) return next(err);
+      if (err) {
+        return next(err);
+      }
+      // Gán thông tin người dùng vào session
       req.session.user = user;
       req.flash("success_msg", "Đăng nhập thành công");
-      return res.redirect(redirectPath);
+      return res.redirect("/main");
     });
   })(req, res, next);
-}
+};
 
-module.exports.Login = (req, res, next) => handleLogin(req, res, next, "/main");
-module.exports.LoginWriter = (req, res, next) => handleLogin(req, res, next, "/writer");
-module.exports.LoginEditor = (req, res, next) => handleLogin(req, res, next, "/editor");
-module.exports.LoginAdmin = (req, res, next) => handleLogin(req, res, next, "/admin");
+module.exports.LoginWriter = (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      req.flash("error_msg", "Tên đăng nhập hoặc mật khẩu không đúng");
+      return res.redirect("/api");
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      // Gán thông tin người dùng vào session
+      req.session.user = user;
+      req.flash("success_msg", "Đăng nhập thành công");
+      return res.redirect("/writer");
+    });
+  })(req, res, next);
+};
+
+module.exports.LoginEditor = (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      req.flash("error_msg", "Tên đăng nhập hoặc mật khẩu không đúng");
+      return res.redirect("/api");
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      // Gán thông tin người dùng vào session
+      req.session.user = user;
+      req.flash("success_msg", "Đăng nhập thành công");
+      return res.redirect("/editor");
+    });
+  })(req, res, next);
+};
+
+module.exports.LoginAdmin = (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      req.flash("error_msg", "Tên đăng nhập hoặc mật khẩu không đúng");
+      return res.redirect("/api");
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      // Gán thông tin người dùng vào session
+      req.session.user = user;
+      req.flash("success_msg", "Đăng nhập thành công");
+      return res.redirect("/admin");
+    });
+  })(req, res, next);
+};
+
 
 module.exports.Logout = (req, res) => {
   req.session.destroy(err => {

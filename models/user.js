@@ -29,7 +29,7 @@ const findById = async (id, callback) => {
   try {
     const pool = await db.connectDB();
     const result = await pool.request()
-      .input('Id', db.sql.UniqueIdentifier, id)
+      .input('Id', db.sql.Int, id)
       .execute('sp_FindUserById');
     callback(null, result.recordset[0] || null);
   } catch (err) {
@@ -151,7 +151,7 @@ const updateRole = async (id, user, callback) => {
   try {
     const pool = await db.connectDB();
     await pool.request()
-      .input('Id', db.sql.UniqueIdentifier, id)
+      .input('Id', db.sql.Int, id)
       .input('Role', db.sql.NVarChar(50), user.role)
       .execute('sp_UpdateUserRole');
     callback(null);
@@ -165,7 +165,7 @@ const editUser = async (id, user, imageUrl, callback) => {
   try {
     const pool = await db.connectDB();
     await pool.request()
-      .input('Id', db.sql.UniqueIdentifier, id)
+      .input('Id', db.sql.Int, id)
       .input('Username', db.sql.NVarChar(255), user.username)
       .input('Email', db.sql.NVarChar(255), user.email)
       .input('PenName', db.sql.NVarChar(255), user.penName)
@@ -183,7 +183,7 @@ const deletes = async (id, callback) => {
   try {
     const pool = await db.connectDB();
     await pool.request()
-      .input('Id', db.sql.UniqueIdentifier, id)
+      .input('Id', db.sql.Int, id)
       .execute('sp_DeleteUser');
     callback(null);
   } catch (err) {

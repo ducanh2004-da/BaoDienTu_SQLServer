@@ -1,165 +1,276 @@
-// models/home.js
-const { connectDB, sql } = require('../utils/db');
+const { connectDB, sql } = require("../utils/db.js");
 
-// 1. Highlighted posts (chưa có SP, dùng dynamic SQL với DATEADD/GETDATE và OFFSET–FETCH)
-const getHighlightedPosts = async (callback) => {
-  const baseInterval = 7;   // ngày
-  const maxInterval = 365;  // ngày
-  let currentInterval = baseInterval;
-  try {
-    const pool = await connectDB();
-    let records = [];
+// Fetch 3-4 highlighted posts in the past week, expanding interval if needed
+const getHighlightedPosts = (callback) => {
+  connectDB()
+    .then(pool => {
+      let currentInterval = 7;
+      const maxInterval = 365;
 
-    do {
-      const result = await pool.request()
-        .query(`
-          SELECT TOP 4
-            p.*,
-            c.name AS category_name
-          FROM posts p
-            JOIN post_categories pc ON p.id = pc.postId
-            JOIN categories c ON pc.categoryId = c.id
-          WHERE p.statusName = 'Published'
-            AND p.publish_date >= DATEADD(day, -${currentInterval}, GETDATE())
-          ORDER BY p.premium DESC, p.views DESC, p.likes DESC;
-        `);
-      records = result.recordset;
-      if (records.length === 0 && currentInterval < maxInterval) {
-        currentInterval += 7;
-      } else {
-        break;
-      }
-    } while (true);
+      const fetchPosts = async () => {
+        try {
+          const request = pool.request();
+          request.input("IntervalDays", sql.Int, currentInterval);
+          const result = await request.execute("GetHighlightedPosts");
+          const posts = result.recordset;
+          if (posts.length === 0 && currentInterval < maxInterval) {
+            currentInterval += 7;
+            await fetchPosts();
+          } else {
+            callback(null, posts);
+          }
+        } catch (err) {
+          callback(err, null);
+        }
+      };
 
-    callback(null, records);
-  } catch (err) {
-    callback(err, null);
-  }
+      fetchPosts();
+    })
+    .catch(err => callback(err, null));
 };
 
-// 2. Highlighted posts (no premium)
-const getHighlightedPostsNoPremium = async (callback) => {
-  const baseInterval = 7;
-  const maxInterval = 365;
-  let currentInterval = baseInterval;
-  try {
-    const pool = await connectDB();
-    let records = [];
+const getHighlightedPostsNoPremium = (callback) => {
+  connectDB()
+    .then(pool => {
+      let currentInterval = 7;
+      const maxInterval = 365;
 
-    do {
-      const result = await pool.request()
-        .query(`
-          SELECT TOP 4
-            p.*,
-            c.name AS category_name
-          FROM posts p
-            JOIN post_categories pc ON p.id = pc.postId
-            JOIN categories c ON pc.categoryId = c.id
-          WHERE p.statusName = 'Published'
-            AND p.premium = 0
-            AND p.publish_date >= DATEADD(day, -${currentInterval}, GETDATE())
-          ORDER BY p.views DESC, p.likes DESC;
-        `);
-      records = result.recordset;
-      if (records.length === 0 && currentInterval < maxInterval) {
-        currentInterval += 7;
-      } else {
-        break;
-      }
-    } while (true);
+      const fetchPosts = async () => {
+        try {
+          const request = pool.request();
+          request.input("IntervalDays", sql.Int, currentInterval);
+          const result = await request.execute("GetHighlightedPostsNoPremium");
+          const posts = result.recordset;
+          if (posts.length === 0 && currentInterval < maxInterval) {
+            currentInterval += 7;
+            await fetchPosts();
+          } else {
+            callback(null, posts);
+          }
+        } catch (err) {
+          callback(err, null);
+        }
+      };
 
-    callback(null, records);
-  } catch (err) {
-    callback(err, null);
-  }
+      fetchPosts();
+    })
+    .catch(err => callback(err, null));
 };
 
-// 3. Top 10 liked posts
-const getTop10MostViewedPosts = async (callback) => {
+// Fetch the top 10 most viewed posts, including category name
+const getTop10MostViewedPosts = (callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .execute("GetTop10ViewedPosts", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+const getTop10MostViewedPostsNoPremium = (callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .execute("GetTop10MostViewedPostsNoPremium", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+// Fetch the top 10 newest posts, including category name
+const getTop10NewestPosts = (callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .execute("GetTop10NewestPosts", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+const getTop10NewestPostsNoPremium = (callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .execute("GetTop10NewestPostsNoPremium", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+// Fetch 3 newest posts for each of the top 10 categories
+const getTopCategoriesWithNewestPosts = (callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .execute("GetTopCategoriesWithNewestPosts", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+const getTopCategoriesWithNewestPostsNoPremium = (callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .execute("GetTopCategoriesWithNewestPostsNoPremium", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+// Fetch the top 5 most liked posts by category
+const getTop5MostLikedPostsByCategory = (categoryId, callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .input("CategoryId", sql.Int, categoryId)
+        .execute("GetTop5MostLikedPostsByCategory", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+const getTop5MostLikedPostsByCategoryNoPremium = (categoryId, callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .input("CategoryId", sql.Int, categoryId)
+        .execute("GetTop5MostLikedPostsByCategoryNoPremium", (err, result) => {
+          if (err) return callback(err, null);
+          callback(null, result.recordset);
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+// Search content with total count
+const searchContent = (content, limit, offset, callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .input("SearchTerm", sql.NVarChar(sql.MAX), content)
+        .input("Limit", sql.Int, limit)
+        .input("Offset", sql.Int, offset)
+        .execute("SearchContent", (err, result) => {
+          if (err) return callback(err, null);
+          const posts = result.recordsets[0];
+          const total = result.recordsets[1][0].total;
+          callback(null, { posts, total });
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+const searchContentNoPremium = (content, limit, offset, callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .input("SearchTerm", sql.NVarChar(sql.MAX), content)
+        .input("Limit", sql.Int, limit)
+        .input("Offset", sql.Int, offset)
+        .execute("SearchContentNoPremium", (err, result) => {
+          if (err) return callback(err, null);
+          const posts = result.recordsets[0];
+          const total = result.recordsets[1][0].total;
+          callback(null, { posts, total });
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+// Fetch posts by tag with total count
+const getPostsByTag = (tag, limit, offset, callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .input("Tag", sql.NVarChar(100), tag)
+        .input("Limit", sql.Int, limit)
+        .input("Offset", sql.Int, offset)
+        .execute("GetPostsByTag", (err, result) => {
+          if (err) return callback(err, null);
+          const posts = result.recordsets[0];
+          const total = result.recordsets[1][0].total;
+          callback(null, { posts, total });
+        });
+    })
+    .catch(err => callback(err, null));
+};
+
+const getPostsByTagNoPremium = (tag, limit, offset, callback) => {
+  connectDB()
+    .then(pool => {
+      pool.request()
+        .input("Tag", sql.NVarChar(100), tag)
+        .input("Limit", sql.Int, limit)
+        .input("Offset", sql.Int, offset)
+        .execute("GetPostsByTagNoPremium", (err, result) => {
+          if (err) return callback(err, null);
+          const posts = result.recordsets[0];
+          const total = result.recordsets[1][0].total;
+          callback(null, { posts, total });
+        });
+    })
+    .catch(err => callback(err, null));
+};
+// 13. Count search results only
+async function searchContentCount(searchTerm, callback) {
   try {
     const pool = await connectDB();
     const result = await pool.request()
-      .execute('GetTop10ViewedPosts');
-    callback(null, result.recordset);
+      .input('SearchTerm', sql.NVarChar(4000), searchTerm)
+      .execute('SearchContentCount');
+    const total = result.recordset[0].total;
+    callback(null, total);
   } catch (err) {
     callback(err, null);
   }
-};
+}
 
-// 4. Top 10 newest posts
-const getTop10NewestPosts = async (callback) => {
+// 14. Count non-premium search results only
+async function searchContentCountNoPremium(searchTerm, callback) {
   try {
     const pool = await connectDB();
     const result = await pool.request()
-      .execute('GetLatest10Posts');
-    callback(null, result.recordset);
+      .input('SearchTerm', sql.NVarChar(4000), searchTerm)
+      .execute('SearchContentCountNoPremium');
+    const total = result.recordset[0].total;
+    callback(null, total);
   } catch (err) {
     callback(err, null);
   }
-};
-
-// 5. Categories list
-const getCategories = async (callback) => {
-  try {
-    const pool = await connectDB();
-    const result = await pool.request()
-      .execute('GetCategories');
-    callback(null, result.recordset);
-  } catch (err) {
-    callback(err, null);
-  }
-};
-
-// 6. Top categories with newest posts (chưa có SP, vẫn dùng dynamic SQL)
-const getTopCategoriesWithNewestPosts = async (callback) => {
-  try {
-    const pool = await connectDB();
-    const result = await pool.request()
-      .query(`
-        WITH TopCategories AS (
-          SELECT TOP 10
-            c.id AS category_id,
-            c.name AS category_name,
-            SUM(p.views) AS total_views
-          FROM categories c
-            JOIN post_categories pc ON c.id = pc.categoryId
-            JOIN posts p ON pc.postId = p.id
-          WHERE p.statusName = 'Published'
-          GROUP BY c.id, c.name
-          ORDER BY total_views DESC
-        ),
-        RankedPosts AS (
-          SELECT
-            p.*,
-            pc.categoryId,
-            ROW_NUMBER() OVER (
-              PARTITION BY pc.categoryId
-              ORDER BY p.premium DESC, p.publish_date DESC
-            ) AS row_num
-          FROM posts p
-            JOIN post_categories pc ON p.id = pc.postId
-            JOIN TopCategories tc ON pc.categoryId = tc.category_id
-          WHERE p.statusName = 'Published'
-        )
-        SELECT
-          c.name AS category_name,
-          rp.*
-        FROM RankedPosts rp
-          JOIN categories c ON rp.categoryId = c.id
-        WHERE rp.row_num <= 3
-        ORDER BY c.name, rp.publish_date DESC;
-      `);
-    callback(null, result.recordset);
-  } catch (err) {
-    callback(err, null);
-  }
-};
+}
 
 module.exports = {
   getHighlightedPosts,
   getHighlightedPostsNoPremium,
   getTop10MostViewedPosts,
+  getTop10MostViewedPostsNoPremium,
   getTop10NewestPosts,
-  getCategories,
-  getTopCategoriesWithNewestPosts
+  getTop10NewestPostsNoPremium,
+  getTopCategoriesWithNewestPosts,
+  getTopCategoriesWithNewestPostsNoPremium,
+  getTop5MostLikedPostsByCategory,
+  getTop5MostLikedPostsByCategoryNoPremium,
+  searchContent,
+  searchContentNoPremium,
+  searchContentCount,
+  searchContentCountNoPremium,
+  getPostsByTag,
+  getPostsByTagNoPremium
 };

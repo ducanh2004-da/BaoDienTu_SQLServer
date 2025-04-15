@@ -1,6 +1,6 @@
 --2.Quản lý người dùng
 -- Lấy tất cả người dùng
-USE baodientu5;
+USE baodientu8;
 GO
 
 CREATE PROCEDURE sp_GetAllUsers
@@ -837,5 +837,289 @@ AS
 BEGIN
     INSERT INTO comments (postId, userId, content) 
     VALUES (@PostId, @UserId, @Content);
+END;
+GO
+
+
+-- Bổ sung thêm cho HomePage
+-- 1. Highlighted posts with dynamic interval
+CREATE PROCEDURE GetHighlightedPosts
+  @IntervalDays INT
+AS
+BEGIN
+  SELECT TOP 4 p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published'
+    AND p.publish_date >= DATEADD(day, -@IntervalDays, GETDATE())
+  ORDER BY p.premium DESC, p.views DESC, p.likes DESC;
+END;
+GO
+
+CREATE PROCEDURE GetHighlightedPostsNoPremium
+  @IntervalDays INT
+AS
+BEGIN
+  SELECT TOP 4 p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published'
+    AND p.premium = 0
+    AND p.publish_date >= DATEADD(day, -@IntervalDays, GETDATE())
+  ORDER BY p.views DESC, p.likes DESC;
+END;
+GO
+
+-- 2. Top 10 most viewed posts
+
+CREATE PROCEDURE GetTop10MostViewedPostsNoPremium
+AS
+BEGIN
+  SELECT TOP 10 p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published'
+    AND p.premium = 0
+  ORDER BY p.views DESC;
+END;
+GO
+
+-- 3. Top 10 newest posts
+CREATE PROCEDURE GetTop10NewestPosts
+AS
+BEGIN
+  SELECT TOP 10 p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published'
+  ORDER BY p.premium DESC, p.publish_date DESC;
+END;
+GO
+
+CREATE PROCEDURE GetTop10NewestPostsNoPremium
+AS
+BEGIN
+  SELECT TOP 10 p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published'
+    AND p.premium = 0
+  ORDER BY p.publish_date DESC;
+END;
+GO
+
+-- 4. Top categories with newest posts
+CREATE PROCEDURE GetTopCategoriesWithNewestPosts
+AS
+BEGIN
+  WITH TopCategories AS (
+    SELECT c.categoryId AS category_id, SUM(p.views) AS total_views
+    FROM categories c
+    JOIN post_categories pc ON c.categoryId = pc.categoryId
+    JOIN posts p ON pc.postId = p.postId
+    WHERE p.statusName = 'Published'
+    GROUP BY c.categoryId
+    ORDER BY total_views DESC
+    OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+  ), RankedPosts AS (
+    SELECT p.*, pc.categoryId,
+      ROW_NUMBER() OVER (PARTITION BY pc.categoryId ORDER BY p.premium DESC, p.publish_date DESC) AS row_num
+    FROM posts p
+    JOIN post_categories pc ON p.postId = pc.postId
+    JOIN TopCategories tc ON pc.categoryId = tc.category_id
+    WHERE p.statusName = 'Published'
+  )
+  SELECT c.name AS category_name, rp.*
+  FROM RankedPosts rp
+  JOIN categories c ON rp.categoryId = c.categoryId
+  WHERE rp.row_num <= 3
+  ORDER BY c.name, rp.publish_date DESC;
+END;
+GO
+
+CREATE PROCEDURE GetTopCategoriesWithNewestPostsNoPremium
+AS
+BEGIN
+  WITH TopCategories AS (
+    SELECT c.categoryId AS category_id, SUM(p.views) AS total_views
+    FROM categories c
+    JOIN post_categories pc ON c.categoryId = pc.categoryId
+    JOIN posts p ON pc.postId = p.postId
+    WHERE p.statusName = 'Published' AND p.premium = 0
+    GROUP BY c.categoryId
+    ORDER BY total_views DESC
+    OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+  ), RankedPosts AS (
+    SELECT p.*, pc.categoryId,
+      ROW_NUMBER() OVER (PARTITION BY pc.categoryId ORDER BY p.publish_date DESC) AS row_num
+    FROM posts p
+    JOIN post_categories pc ON p.postId = pc.postId
+    JOIN TopCategories tc ON pc.categoryId = tc.category_id
+    WHERE p.statusName = 'Published' AND p.premium = 0
+  )
+  SELECT c.name AS category_name, rp.*
+  FROM RankedPosts rp
+  JOIN categories c ON rp.categoryId = c.categoryId
+  WHERE rp.row_num <= 3
+  ORDER BY c.name, rp.publish_date DESC;
+END;
+GO
+
+-- 5. Top 5 most liked posts by category
+CREATE PROCEDURE GetTop5MostLikedPostsByCategory
+  @CategoryId INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM categories WHERE categoryId = @CategoryId AND parent_id IS NULL)
+    SELECT TOP 5 p.*, c.name AS category_name
+    FROM posts p
+    JOIN post_categories pc ON p.postId = pc.postId
+    JOIN categories c ON pc.categoryId = c.categoryId
+    WHERE c.parent_id = @CategoryId AND p.statusName = 'Published'
+    ORDER BY p.premium DESC, p.likes DESC;
+  ELSE
+    SELECT TOP 5 p.*, c.name AS category_name
+    FROM posts p
+    JOIN post_categories pc ON p.postId = pc.postId
+    JOIN categories c ON pc.categoryId = c.categoryId
+    WHERE c.categoryId = @CategoryId AND p.statusName = 'Published'
+    ORDER BY p.premium DESC, p.likes DESC;
+END;
+GO
+
+CREATE PROCEDURE GetTop5MostLikedPostsByCategoryNoPremium
+  @CategoryId INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM categories WHERE categoryId = @CategoryId AND parent_id IS NULL)
+    SELECT TOP 5 p.*, c.name AS category_name
+    FROM posts p
+    JOIN post_categories pc ON p.postId = pc.postId
+    JOIN categories c ON pc.categoryId = c.categoryId
+    WHERE c.parent_id = @CategoryId AND p.statusName = 'Published' AND p.premium = 0
+    ORDER BY p.likes DESC;
+  ELSE
+    SELECT TOP 5 p.*, c.name AS category_name
+    FROM posts p
+    JOIN post_categories pc ON p.postId = pc.postId
+    JOIN categories c ON pc.categoryId = c.categoryId
+    WHERE c.categoryId = @CategoryId AND p.statusName = 'Published' AND p.premium = 0
+    ORDER BY p.likes DESC;
+END;
+GO
+
+-- 6. Search content with pagination and count
+CREATE PROCEDURE SearchContent
+  @SearchTerm NVARCHAR(4000),
+  @Limit INT,
+  @Offset INT
+AS
+BEGIN
+  SELECT p.postId, p.title, p.abstract, p.publish_date, p.views, p.likes
+  FROM posts p
+  WHERE p.statusName = 'Published' AND
+        CONTAINS((p.title, p.abstract), @SearchTerm)
+  ORDER BY p.publish_date DESC
+  OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+
+  SELECT COUNT(*) AS total
+  FROM posts p
+  WHERE p.statusName = 'Published' AND
+        CONTAINS((p.title, p.abstract), @SearchTerm);
+END;
+GO
+
+CREATE PROCEDURE SearchContentNoPremium
+  @SearchTerm NVARCHAR(4000),
+  @Limit INT,
+  @Offset INT
+AS
+BEGIN
+  SELECT p.postId, p.title, p.abstract, p.publish_date, p.views, p.likes
+  FROM posts p
+  WHERE p.statusName = 'Published' AND p.premium = 0 AND
+        CONTAINS((p.title, p.abstract), @SearchTerm)
+  ORDER BY p.publish_date DESC
+  OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+
+  SELECT COUNT(*) AS total
+  FROM posts p
+  WHERE p.statusName = 'Published' AND p.premium = 0 AND
+        CONTAINS((p.title, p.abstract), @SearchTerm);
+END;
+GO
+
+-- 7. Posts by tag with pagination and count
+CREATE PROCEDURE GetPostsByTag
+  @Tag NVARCHAR(100),
+  @Limit INT,
+  @Offset INT
+AS
+BEGIN
+  DECLARE @formattedTag NVARCHAR(104) = '%' + @Tag + '%';
+
+  SELECT p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published' AND p.tags LIKE @formattedTag
+  ORDER BY p.premium DESC, p.updated_at DESC
+  OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+
+  SELECT COUNT(*) AS total
+  FROM posts p
+  WHERE p.statusName = 'Published' AND p.tags LIKE @formattedTag;
+END;
+GO
+
+CREATE PROCEDURE GetPostsByTagNoPremium
+  @Tag NVARCHAR(100),
+  @Limit INT,
+  @Offset INT
+AS
+BEGIN
+  DECLARE @formattedTag NVARCHAR(104) = '%' + @Tag + '%';
+
+  SELECT p.*, c.name AS category_name
+  FROM posts p
+  JOIN post_categories pc ON p.postId = pc.postId
+  JOIN categories c ON pc.categoryId = c.categoryId
+  WHERE p.statusName = 'Published' AND p.premium = 0 AND p.tags LIKE @formattedTag
+  ORDER BY p.updated_at DESC
+  OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+
+  SELECT COUNT(*) AS total
+  FROM posts p
+  WHERE p.statusName = 'Published' AND p.premium = 0 AND p.tags LIKE @formattedTag;
+END;
+GO
+
+-- Count published search results
+CREATE PROCEDURE SearchContentCount
+  @SearchTerm NVARCHAR(4000)
+AS
+BEGIN
+  SELECT COUNT(*) AS total
+  FROM posts p
+  WHERE p.statusName = 'Published'
+    AND CONTAINS((p.title, p.abstract), @SearchTerm);
+END;
+GO
+
+-- Count published non-premium search results
+CREATE PROCEDURE SearchContentCountNoPremium
+  @SearchTerm NVARCHAR(4000)
+AS
+BEGIN
+  SELECT COUNT(*) AS total
+  FROM posts p
+  WHERE p.statusName = 'Published'
+    AND p.premium = 0
+    AND CONTAINS((p.title, p.abstract), @SearchTerm);
 END;
 GO

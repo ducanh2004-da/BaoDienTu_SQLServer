@@ -1,6 +1,6 @@
 
 -- Sử dụng cơ sở dữ liệu
-USE baodientu;
+USE baodientu8;
 GO
 
 -- Tạo bảng users
@@ -9,8 +9,8 @@ CREATE TABLE users (
     username NVARCHAR(100),
     email NVARCHAR(100) NOT NULL UNIQUE,
     password NVARCHAR(255),
-    githubId NVARCHAR(255) UNIQUE,
-    googleId NVARCHAR(255) UNIQUE,
+    githubId NVARCHAR(255),
+    googleId NVARCHAR(255),
     role NVARCHAR(20) CHECK (role IN ('subscriber', 'writer', 'editor', 'admin', 'non-subscriber')) DEFAULT 'subscriber',
     penName NVARCHAR(50),
     birthday DATE,

@@ -1,5 +1,5 @@
 -- Chọn cơ sở dữ liệu
-USE baodientu2;
+USE baodientu8;
 GO
 
 -- Thêm dữ liệu vào bảng users
@@ -40,9 +40,7 @@ GO
 -- Associate posts with categories
 INSERT INTO post_categories (postId, categoryId) VALUES
     (1, 4), (2, 5), (3, 6), (4, 7), (5, 8),
-    (6, 4), (7, 5), (8, 5), (9, 6), (10, 7),
-    (11, 5), (12, 8), (13, 4), (14, 7), (15, 6),
-    (16, 8), (17, 7), (18, 4), (19, 5), (20, 6);
+    (6, 4), (7, 5), (8, 5), (9, 6), (10, 7);
 GO
 -- Insert sample comments
 INSERT INTO comments (postId, content, userId)
@@ -51,16 +49,15 @@ VALUES
     (2, 'This is very helpful, thanks!', 1),
     (3, 'Python is my favorite language!', 1),
     (4, 'Amazing article on travel tips!', 2),
-    (5, 'This helped me a lot, thanks!', 3);
+    (5, 'This helped me a lot, thanks!', 1);
 GO
 -- Insert sample likes
 INSERT INTO likes (postId, userId)
 VALUES
     (1, 1),
-    (1, 3),
     (2, 1),
     (3, 2),
-    (4, 3),
+    (4, 2),
     (5, 1),
     (6, 2);
 GO

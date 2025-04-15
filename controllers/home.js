@@ -1,4 +1,3 @@
-// controllers/main.js
 const postModel = require("../models/post.js");
 const categoryModel = require("../models/category.js");
 const homeModel = require("../models/home.js");
@@ -15,16 +14,16 @@ function validateInput(input) {
   return input;
 }
 
-// Khởi tạo danh mục cha-con
 const initializeCategories = async () => {
   return new Promise((resolve, reject) => {
     categoryModel.getAllCategories((err, data) => {
       if (err) {
         console.error("Error initializing categories:", err);
-        return reject(err);
+        reject(err);
+      } else {
+        categories = Array.isArray(data) ? data : [];
+        resolve(categories);
       }
-      categories = Array.isArray(data) ? data : [];
-      resolve(categories);
     });
   });
 };
@@ -32,38 +31,39 @@ const initializeCategories = async () => {
 const updateFilteredCategories = async () => {
   await initializeCategories();
   filteredCategories = categories
-    .filter(cat => cat.parent_id === null || cat.parentId === null)
-    .map(parent => ({
+    .filter((category) => category.parent_id === null)
+    .map((parent) => ({
       ...parent,
-      children: categories.filter(child => child.parent_id === parent.id || child.parentId === parent.id)
+      children: categories.filter((child) => child.parent_id === parent.id),
     }));
 };
 
-// Chạy khi khởi động
-updateFilteredCategories().catch(err => console.error(err));
+updateFilteredCategories().catch((error) => {
+  console.error("Error updating filtered categories:", error);
+});
 
 module.exports = {
-  // Trang chủ
+  // Hiển thị trang chủ
   showHomePage: (req, res) => {
     const notification = req.session.notification || null;
 
     homeModel.getHighlightedPostsNoPremium((err, highlightedPosts) => {
       if (err) return res.status(500).send("Không thể lấy bài viết nổi bật");
 
-      homeModel.getTopCategoriesWithNewestPosts((err, posts) => {
+      homeModel.getTopCategoriesWithNewestPostsNoPremium((err, posts) => {
         if (err) return res.status(500).send("Không thể lấy danh mục hàng đầu");
 
-        const topCategories = posts.reduce((acc, p) => {
-          const { category_name, ...rest } = p;
-          if (!acc[category_name]) acc[category_name] = [];
-          acc[category_name].push(rest);
-          return acc;
+        const topCategories = posts.reduce((grouped, post) => {
+          const { category_name, ...data } = post;
+          if (!grouped[category_name]) grouped[category_name] = [];
+          grouped[category_name].push(data);
+          return grouped;
         }, {});
 
-        homeModel.getTop10NewestPosts((err, latestPosts) => {
+        homeModel.getTop10NewestPostsNoPremium((err, latestPosts) => {
           if (err) return res.status(500).send("Không thể lấy bài viết mới nhất");
 
-          homeModel.getTop10MostViewedPosts((err, mostViewPosts) => {
+          homeModel.getTop10MostViewedPostsNoPremium((err, mostViewPosts) => {
             if (err) return res.status(500).send("Không thể lấy bài viết được xem nhiều nhất");
 
             res.render("vwUser/home", {
@@ -74,7 +74,7 @@ module.exports = {
               highlightedPosts,
               topCategories,
               latestPosts,
-              mostViewPosts
+              mostViewPosts,
             });
           });
         });
@@ -82,10 +82,12 @@ module.exports = {
     });
   },
 
-  // Trang danh mục
+  // Hiển thị trang danh mục
   showCategory: (req, res) => {
     const id = parseInt(req.params.id, 10);
-    if (!id) return res.status(400).send("ID danh mục không hợp lệ");
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).send("ID danh mục không hợp lệ");
+    }
 
     let page = parseInt(req.query.page, 10) || 1;
     if (page < 1) page = 1;
@@ -94,21 +96,25 @@ module.exports = {
 
     categoryModel.getCatById(id, (err, category) => {
       if (err) return res.status(500).send("Không thể lấy danh mục");
+      if (!category) return res.status(404).send("Danh mục không tồn tại");
 
       postModel.getPostsByCategoryNoPremium(id, limit, offset, (err, posts) => {
         if (err) return res.status(500).send("Không thể lấy bài viết của danh mục này");
 
-        homeModel.getTop5MostLikedPostsByCategory(id, (err, hotPosts) => {
-          if (err) return res.status(500).send("Không thể lấy bài viết được yêu thích");
+        homeModel.getTop5MostLikedPostsByCategoryNoPremium(id, (err, hotPosts) => {
+          if (err) return res.status(500).send("Không thể lấy bài viết được yêu thích nhất");
 
-          postModel.getPostsByCategoryCountNoPremium(id, (err, countResult) => {
-            if (err) return res.status(500).send("Không thể đếm bài viết");
+          postModel.getPostsByCategoryCountNoPremium(id, (err, totalCount) => {
+            if (err) return res.status(500).send("Không thể lấy tổng số bài viết");
 
-            const total = countResult[0]?.total || 0;
-            const totalPages = Math.ceil(total / limit);
-            if (page > totalPages && totalPages > 0) return res.status(404).send("Không tìm thấy trang");
+            const nRows = totalCount || 0;
+            const totalPages = Math.ceil(nRows / limit);
+            if (page > totalPages && totalPages > 0) {
+              return res.status(404).send("Không tìm thấy trang");
+            }
 
             const pages = Array.from({ length: totalPages }, (_, i) => ({ value: i + 1 }));
+
             res.render("vwPost/byCat", {
               layout: "main",
               title: category.name,
@@ -119,7 +125,7 @@ module.exports = {
               totalPages,
               pages,
               id,
-              message: total > 0 ? `Tìm thấy ${total} bài viết` : "Không có bài viết"
+              message: nRows > 0 ? `Tìm thấy ${nRows} bài viết` : "Không có bài viết nào trong danh mục này",
             });
           });
         });
@@ -127,48 +133,72 @@ module.exports = {
     });
   },
 
-  // Chi tiết bài viết
+  // Hiển thị chi tiết bài viết
   showDetail: (req, res) => {
     const id = parseInt(req.params.id, 10);
 
-    postModel.updateView(id, err => {
-      if (err) console.error("Lỗi tăng view:", err);
+    postModel.updateView(id, (err) => {
+      if (err) console.error("Lỗi khi tăng lượt xem:", err);
     });
 
     postModel.isPremium(id, (err, isPremium) => {
-      if (err) return res.status(500).send("Không thể kiểm tra premium");
+      if (err) {
+        console.error("Lỗi khi kiểm tra premium:", err);
+        return res.status(500).send("Không thể kiểm tra quyền truy cập");
+      }
       if (isPremium) {
-        req.session.notification = { type: "danger", message: "Không đủ quyền truy cập" };
+        req.session.notification = {
+          type: "danger",
+          message: "Bạn không có đủ quyền truy cập bài viết này",
+        };
         return res.redirect("/home");
       }
 
       postModel.getPostById(id, (err, post) => {
-        if (err) return res.status(500).send("Không thể lấy bài viết");
-        if (post.statusName !== "Published") return res.status(404).send("Chưa xuất bản");
+        if (err) {
+          console.error("Lỗi khi lấy chi tiết bài viết:", err);
+          return res.status(500).send("Không thể lấy chi tiết bài viết");
+        }
+        if (!post || post.statusName !== "Published") {
+          return res.status(404).send("Bài viết không tồn tại hoặc chưa được xuất bản");
+        }
 
-        const tags = post.tags?.split(",").map(t => t.trim()) || [];
+        const tags = post.tags ? post.tags.split(",").map(t => t.trim()) : [];
 
         postModel.getPostAuthorInfo(id, (err, author) => {
-          if (err) return res.status(500).send("Không thể lấy tác giả");
+          if (err) {
+            console.error("Lỗi khi lấy thông tin tác giả:", err);
+            return res.status(500).send("Không thể lấy thông tin tác giả");
+          }
 
-          categoryModel.getPostCategories(id, (err, postCats) => {
-            if (err) return res.status(500).send("Không thể lấy chuyên mục");
+          categoryModel.getPostCategories(id, (err, cats) => {
+            if (err) {
+              console.error("Lỗi khi lấy danh mục bài viết:", err);
+              return res.status(500).send("Không thể lấy thông tin danh mục");
+            }
 
             commentModel.getCommentsByPostId(id, (err, comments) => {
-              if (err) return res.status(500).send("Không thể lấy bình luận");
+              if (err) {
+                console.error("Lỗi khi lấy bình luận:", err);
+                return res.status(500).send("Không thể lấy bình luận");
+              }
 
-              postModel.get5PostsByCatNoPremium(id, (err, related) => {
-                if (err) console.error(err);
+              postModel.get5PostsByCatNoPremium(id, (err, relatedPosts) => {
+                if (err) {
+                  console.error("Lỗi khi lấy bài viết liên quan:", err);
+                  return res.status(500).send("Không thể lấy bài viết liên quan");
+                }
+
                 res.render("vwPost/post-detail", {
                   layout: "main",
                   title: post.title,
                   post,
                   categories: filteredCategories,
-                  postCategories: postCats,
+                  postCategories: cats,
                   author,
                   comments,
                   tags,
-                  relatedPosts: related || []
+                  relatedPosts,
                 });
               });
             });
@@ -178,53 +208,84 @@ module.exports = {
     });
   },
 
-  // Tìm kiếm
+  // Tìm kiếm bài viết
   search: (req, res) => {
-    const q = validateInput(req.query.q || "");
+    const query = validateInput(req.query.q || "");
+    if (!req.query.page) {
+      return res.redirect(`./search?q=${query}&page=1`);
+    }
+
     let page = parseInt(req.query.page, 10) || 1;
     if (page < 1) page = 1;
     const limit = 10;
     const offset = (page - 1) * limit;
 
-    homeModel.searchContentNoPremium(q, limit, offset, (err, results) => {
-      if (err) return res.status(500).send("Lỗi tìm kiếm");
-      if (results.length === 0) {
-        return res.render("vwPost/search", { layout: "main", title: `Kết quả: ${q}`, posts: [], categories: filteredCategories, message: "Không tìm thấy" });
+    homeModel.searchContentNoPremium(query, limit, offset, (err, result) => {
+      if (err) {
+        console.error("Lỗi khi tìm kiếm bài viết:", err);
+        return res.status(500).send("Không thể tìm kiếm bài viết");
       }
 
-      homeModel.searchContentCountNoPremium(q, (err, countRes) => {
-        if (err) return res.status(500).send("Lỗi đếm kết quả");
-        const total = countRes[0].total;
-        const totalPages = Math.ceil(total / limit);
-        const pages = [];
-        for (let i = 1; i <= totalPages; i++) pages.push({ value: i });
-
-        res.render("vwPost/search", {
+      const posts = result.posts;
+      const total = result.total;
+      if (posts.length === 0) {
+        return res.render("vwPost/search", {
           layout: "main",
-          title: `Kết quả: ${q}`,
-          posts: results,
+          title: `Kết quả tìm kiếm cho ${query}`,
+          posts,
           categories: filteredCategories,
-          currentPage: page,
-          totalPages,
-          pages,
-          query: q,
-          message: `Tìm thấy ${total} kết quả`
+          user: req.session.user,
+          message: "Không tìm thấy kết quả phù hợp",
         });
+      }
+
+      const totalPages = Math.ceil(total / limit);
+      if (page > totalPages) {
+        return res.status(404).send("Không tìm thấy trang");
+      }
+
+      const pages = [];
+      const dotsIndex = page + 3;
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === dotsIndex) {
+          pages.push({ value: "..." });
+          break;
+        }
+        pages.push({ value: i });
+      }
+      for (let i = Math.max(dotsIndex + 1, totalPages - 2); i <= totalPages; i++) {
+        pages.push({ value: i });
+      }
+
+      res.render("vwPost/search", {
+        layout: "main",
+        title: `Kết quả tìm kiếm cho ${query}`,
+        posts,
+        categories: filteredCategories,
+        currentPage: page,
+        totalPages,
+        pages,
+        query,
+        message: `Tìm thấy ${total} kết quả phù hợp`,
       });
     });
   },
 
-  // Tag
+  // Hiển thị theo tag
   showTag: (req, res) => {
     const tag = req.params.name;
-    let page = parseInt(req.query.page, 10) || 1;
+    const page = parseInt(req.query.page, 10) || 1;
     const limit = 2;
     const offset = (page - 1) * limit;
 
-    homeModel.getPostsByTagNoPremium(tag, limit, offset, (err, { posts, total } = {}) => {
-      if (err) return res.status(500).send("Lỗi tag");
-      const totalPages = Math.ceil((total || 0) / limit);
-      const pages = Array.from({ length: totalPages }, (_, i) => ({ value: i + 1 }));
+    homeModel.getPostsByTagNoPremium(tag, limit, offset, (err, result) => {
+      if (err) {
+        console.error("Lỗi khi lấy theo tag:", err);
+        return res.status(500).send("Không thể ra kết quả");
+      }
+
+      const { posts, total } = result;
+      const totalPages = Math.ceil(total / limit);
 
       res.render("vwPost/byTag", {
         layout: "main",
@@ -232,9 +293,9 @@ module.exports = {
         posts,
         currentPage: page,
         totalPages,
-        pages,
-        query: tag
+        pages: Array.from({ length: totalPages }, (_, i) => ({ value: i + 1 })),
+        query: tag,
       });
     });
-  }
+  },
 };

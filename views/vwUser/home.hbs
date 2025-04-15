@@ -16,20 +16,20 @@
                                 <div class="card">
                                     <div class="row no-gutters">
                                         <div class="col-md-4">
-                                            <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
-                                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" class="img-fluid rounded-left" style="height: 100%; object-fit: cover;" alt="{{this.title}}">
+                                            <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}">
+                                                <img src="/public/posts/imgs/{{this.postId}}/thumbnail.jpg" class="img-fluid rounded-left" style="height: 100%; object-fit: cover;" alt="{{this.title}}">
                                             </a>
                                         </div>
                                         <div class="col-md-8 p-4 no-gutters d-flex flex-column">
                                             <h2 class="card-title">
-                                                <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none">
+                                                <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none">
                                                     {{this.title}}
                                                 </a>
                                             </h2>
                                             <a href="{{#if ../user}}/main/category/{{this.categoryId}}{{else}}/home/category/{{this.categoryId}}{{/if}}" class="text-decoration-none text-dark">
                                                 <p class="card-text">{{this.category_name}}</p>
                                             </a>
-                                            <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                            <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none text-dark">
                                                 <p class="card-text truncate-2-line w-100">
                                                     {{this.abstract}}
                                                 </p>
@@ -76,11 +76,11 @@
                             {{#with this.[0]}}
                                 <div class="col-md-8">
                                     <div class="card border-0">
-                                        <a href="{{#if ../../user}}/main/post/{{id}}{{else}}/home/post/{{id}}{{/if}}">
-                                            <img src="/public/posts/imgs/{{id}}/thumbnail.jpg" class="card-img-top" alt="Main Image">
+                                        <a href="{{#if ../../user}}/main/post/{{postId}}{{else}}/home/post/{{postId}}{{/if}}">
+                                            <img src="/public/posts/imgs/{{postId}}/thumbnail.jpg" class="card-img-top" alt="Main Image">
                                         </a>
                                         <div class="card-body p-0 mt-2">
-                                            <a href="{{#if ../../user}}/main/post/{{id}}{{else}}/home/post/{{id}}{{/if}}" class="text-decoration-none text-dark">
+                                            <a href="{{#if ../../user}}/main/post/{{postId}}{{else}}/home/post/{{postId}}{{/if}}" class="text-decoration-none text-dark">
                                                 <h5 class="font-weight-bold">{{title}}:
                                                     <span class="font-italic">{{abstract}}</span>
                                                 </h5>
@@ -95,8 +95,8 @@
                                 {{#each this}}
                                     {{#unless @first}}
                                         <div class="mb-3">
-                                            <img src="/public/posts/imgs/{{id}}/thumbnail.jpg" class="img-fluid rounded" alt="/public/posts/imgs/{{id}}/thumbnail.jpg">
-                                            <a href="{{#if ../../user}}/main/post/{{id}}{{else}}/home/post/{{id}}{{/if}}" class="text-decoration-none text-dark">
+                                            <img src="/public/posts/imgs/{{postId}}/thumbnail.jpg" class="img-fluid rounded" alt="/public/posts/imgs/{{postId}}/thumbnail.jpg">
+                                            <a href="{{#if ../../user}}/main/post/{{postId}}{{else}}/home/post/{{postId}}{{/if}}" class="text-decoration-none text-dark">
                                                 <h5 class="font-weight-bold">{{title}}:
                                                     <span class="font-italic">{{abstract}}</span>
                                                 </h5>
@@ -112,11 +112,11 @@
                             {{#each this}}
                                 <div class="col">
                                     <div class="card mb-3">
-                                        <a href="{{#if ../user}}/main/post/{{id}}{{else}}/home/post/{{id}}{{/if}}">
-                                            <img src="/public/posts/imgs/{{id}}/thumbnail.jpg" alt="..." width="100%" height="100%" class="img-fluid rounded-top">
+                                        <a href="{{#if ../user}}/main/post/{{postId}}{{else}}/home/post/{{postId}}{{/if}}">
+                                            <img src="/public/posts/imgs/{{postId}}/thumbnail.jpg" alt="..." width="100%" height="100%" class="img-fluid rounded-top">
                                         </a>
                                         <div class="card-body">
-                                            <a href="{{#if ../user}}/main/post/{{id}}{{else}}/home/post/{{id}}{{/if}}" class="text-decoration-none text-dark">
+                                            <a href="{{#if ../user}}/main/post/{{postId}}{{else}}/home/post/{{postId}}{{/if}}" class="text-decoration-none text-dark">
                                                 <h5 class="font-weight-bold">{{title}}:
                                                     <span class="font-italic">{{abstract}}</span>
                                                 </h5>
@@ -152,20 +152,20 @@
                     {{#if latestPosts}}
                     {{#each latestPosts}}
                         <div class="card mb-3">
-                            <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
-                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="..."
+                            <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}">
+                                <img src="/public/posts/imgs/{{this.postId}}/thumbnail.jpg" alt="..."
                                      width="100%" height="100%" class="img-fluid card-img-top">
                             </a>
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                    <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none text-dark">
                                         {{this.title}}
                                     </a>
                                 </h5>
                                 <a href="{{#if ../user}}/main/category/{{this.categoryId}}{{else}}/home/category/{{this.categoryId}}{{/if}}" class="text-decoration-none text-dark">
                                     <p class="card-text">{{this.category_name}}</p>
                                 </a>
-                                <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none text-dark">
                                     <p class="card-text truncate-multi-line w-100">
                                         {{this.abstract}}
                                     </p>
@@ -181,20 +181,20 @@
                 <div id="most-views-news" style="display: none">
                     {{#each mostViewPosts}}
                         <div class="card mb-3">
-                            <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
-                                <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" alt="..."
+                            <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}">
+                                <img src="/public/posts/imgs/{{this.postId}}/thumbnail.jpg" alt="..."
                                      width="100%" height="100%" class="img-fluid card-img-top">
                             </a>
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                    <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none text-dark">
                                         {{this.title}}
                                     </a>
                                 </h5>
                                 <a href="#" class="text-decoration-none text-dark">
                                     <p class="card-text">{{this.category_name}}</p>
                                 </a>
-                                <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none text-dark">
                                     <p class="card-text truncate-multi-line w-100">
                                         {{this.abstract}}
                                     </p>

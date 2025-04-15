@@ -95,6 +95,26 @@ const deletePost = async (id, callback) => {
   }
 };
 
+async function get5PostsByCatNoPremium(categoryId, callback) {
+  try {
+    // Kết nối (pool) đến SQL Server
+    const pool = await connectDB();
+    // Thực thi thủ tục
+    const result = await pool.request()
+      .input('categoryId', sql.Int, categoryId)
+      .execute('get5PostsByCatNoPremium');
+      callback(null, result.recordset); // result.recordset là mảng các bản ghi
+    // result.recordset là mảng các bản ghi
+  } catch (err) {
+    console.error('Error in get5PostsByCatNoPremium:', err);
+    throw err;
+  } finally {
+    // Giải phóng kết nối nếu cần
+    // await sql.close(); 
+    // (nếu bạn không tái sử dụng pool; thường để pool mở liên tục)
+  }
+}
+
 // 8. Cập nhật lượt xem
 const updateView = async (id, callback) => {
   try {
@@ -198,6 +218,7 @@ const deleteLike = (postId, userId, callback) => {
   ).catch(callback);
 };
 
+
 // Các hàm liên quan category/posts dynamic (giữ nguyên hoặc refactor tuỳ bạn)
 // getPostsByCategory, getPostsByCategoryNoPremium, get5PostsByCat, get5PostsByCatNoPremium,
 // getPostsByCategoryCount, getPostsByCategoryCountNoPremium
@@ -218,5 +239,6 @@ module.exports = {
   getPostCategories,
   insertLike,
   deleteLike,
+  get5PostsByCatNoPremium,
   // ... export thêm các hàm dynamic nếu cần
 };

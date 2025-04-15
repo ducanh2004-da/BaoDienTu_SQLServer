@@ -6,7 +6,7 @@ const userSchema = Joi.object({
     email: Joi.string().email().required().trim().escapeHTML(),
     password: Joi.string().min(5).max(255).required().trim().escapeHTML(),
     penName: Joi.string().max(100).optional().trim().escapeHTML(),
-    birthday: Joi.date().optional(),
+    birthday: Joi.string().optional(),
     otp_code: Joi.string().length(6).optional().escapeHTML(),
     otp_expires_at: Joi.date().iso().optional()
 });

@@ -3,7 +3,7 @@ const { engine } = require("express-handlebars");
 const hbs_sections = require("express-handlebars-sections");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
-// const passport = require("passport");
+const passport = require("passport");
 const session = require("express-session");
 const flash = require("connect-flash");
 const bodyParser = require("body-parser");
@@ -19,13 +19,13 @@ const { connectDB } = require("./utils/db");
 
 // Routes
 // const mainRoutes = require("./routes/main");
-// const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth");
 // const adminRoutes = require("./routes/admin");
 // const editorRoutes = require("./routes/editor.js");
 const homeRoutes = require("./routes/home.js");
 // const writerRoutes = require("./routes/writer.js");
 
-// require("./config/passport"); // Passport configuration should be required here
+require("./config/passport"); // Passport configuration should be required here
 
 dotenv.config(); // Load environment variables from .env file
 const PORT = process.env.PORT || 5000;
@@ -184,8 +184,8 @@ app.use(
 );
 
 // // Passport initialization
-// app.use(passport.initialize());
-// app.use(passport.session());
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.json());
 // // Flash messages middleware
 app.use(flash());
@@ -216,7 +216,7 @@ app.use((req, res, next) => {
 // app.use("/writer", authMiddleware.isWriter, writerRoutes);
 // app.use("/editor", authMiddleware.isEditor, editorRoutes);
 app.use("/home", homeRoutes);
-// app.use("/api",loginLimiter, authRoutes);
+app.use("/api",loginLimiter, authRoutes);
 // app.use("/admin", authMiddleware.isAdmin, adminRoutes);
 
 app.use((err, req, res, next) => {

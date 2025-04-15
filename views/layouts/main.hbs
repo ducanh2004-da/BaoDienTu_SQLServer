@@ -97,10 +97,10 @@
                 </li>
                 {{#each categories}}
                     <li class="nav-item dropdown">
-                        <a class="nav-link" href="{{#if ../user}}/main/category/{{this.id}}{{else}}/home/category/{{this.id}}{{/if}}" id="category{{this.id}}">{{this.name}}</a>
-                        <div class="dropdown-menu" aria-labelledby="category{{this.id}}">
+                        <a class="nav-link" href="{{#if ../user}}/main/category/{{this.categoryId}}{{else}}/home/category/{{this.categoryId}}{{/if}}" id="category{{this.categoryId}}">{{this.name}}</a>
+                        <div class="dropdown-menu" aria-labelledby="category{{this.categoryId}}">
                             {{#each this.children}}
-                                <a class="dropdown-item" href="{{#if ../../user}}/main/category/{{this.id}}{{else}}/home/category/{{this.id}}{{/if}}" id="category{{this.id}}">{{this.name}}</a>
+                                <a class="dropdown-item" href="{{#if ../../user}}/main/category/{{this.categoryId}}{{else}}/home/category/{{this.categoryId}}{{/if}}" id="category{{this.categoryId}}">{{this.name}}</a>
                             {{/each}}
                         </div>
                     </li>

@@ -9,15 +9,15 @@
             <div class="row no-gutters">
                 <div class="col-md-3 text-center">
                     <a href="{{#if ../user}}/main{{else}}/home{{/if}}/post/{{id}}">
-                        <img src="/public/posts/imgs/{{id}}/thumbnail.jpg" alt="{{title}}" class="img-fluid rounded-left" style="height: 100%; object-fit: cover;" />
+                        <img src="/public/posts/imgs/{{postId}}/thumbnail.jpg" alt="{{title}}" class="img-fluid rounded-left" style="height: 100%; object-fit: cover;" />
                     </a>
                 </div>
                 <div class="col p-2">
                     <div class="card-body">
-                        <a href="{{#if ../user}}/main{{else}}/home{{/if}}/post/{{this.id}}" class="text-decoration-none text-dark">
+                        <a href="{{#if ../user}}/main{{else}}/home{{/if}}/post/{{this.postId}}" class="text-decoration-none text-dark">
                             <h2 class="card-title">{{title}}</h2>
                         </a>
-                        <a href="{{#if ../user}}/main{{else}}/home{{/if}}/post/{{this.id}}" class="text-decoration-none text-dark">
+                        <a href="{{#if ../user}}/main{{else}}/home{{/if}}/post/{{this.postId}}" class="text-decoration-none text-dark">
                             <p class="card-text truncate-2-line">
                                 {{this.abstract}}
                             </p>

@@ -1123,3 +1123,27 @@ BEGIN
     AND CONTAINS((p.title, p.abstract), @SearchTerm);
 END;
 GO
+--  Get 5 posts by category
+CREATE PROCEDURE dbo.get5PostsByCatNoPremium
+    @categoryId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 5
+        p.postId,
+        p.title,
+        p.publish_date,
+        p.abstract,
+        p.statusName,
+        p.userId,
+        p.tags,
+        p.premium
+    FROM posts p
+    INNER JOIN post_categories pc
+        ON p.postId = pc.postId
+    WHERE pc.categoryId = @categoryId
+      AND p.premium = 0
+    ORDER BY p.publish_date DESC;
+END;
+GO

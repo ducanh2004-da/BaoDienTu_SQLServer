@@ -8,12 +8,12 @@
                     {{#each posts}}
                         <div class="col-md-4 mb-3">
                             <div class="card">
-                                <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}">
-                                    <img src="/public/posts/imgs/{{this.id}}/thumbnail.jpg" class="card-img-top" alt="{{this.title}}">
+                                <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}">
+                                    <img src="/public/posts/imgs/{{this.postId}}/thumbnail.jpg" class="card-img-top" alt="{{this.title}}">
                                 </a>
                                 <div class="card-body">
                                     <h5 class="card-title">
-                                        <a href="{{#if ../user}}/main/post/{{this.id}}{{else}}/home/post/{{this.id}}{{/if}}" class="text-decoration-none text-dark">
+                                        <a href="{{#if ../user}}/main/post/{{this.postId}}{{else}}/home/post/{{this.postId}}{{/if}}" class="text-decoration-none text-dark">
                                             {{this.title}}
                                         </a>
                                     </h5>

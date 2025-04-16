@@ -1,3 +1,4 @@
+/*
 const db = require("../utils/db");
 
 //Prepared Statements for SQL Injection
@@ -104,4 +105,137 @@ module.exports = {
     cancelSubscription,
     extendSubscriptions,
     SelectEndDay
+};
+*/
+
+const { connectDB, sql } = require("../utils/db");
+
+// Lấy tất cả subscriptions
+const getAllSubscriptions = async (callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request().execute("GetAllSubscriptions");
+    callback(null, result.recordset);
+  } catch (err) {
+    callback(err, null);
+  }
+};
+
+// Lấy subscription theo ID
+const getSubscriptionById = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request()
+      .input("subscriptionId", sql.Int, id)
+      .execute("GetSubscriptionById");
+    callback(null, result.recordset[0]);
+  } catch (err) {
+    callback(err, null);
+  }
+};
+
+// Lấy subscription theo userId
+const getSubscriptionByUserId = async (userId, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request()
+      .input("userId", sql.Int, userId)
+      .execute("GetSubscriptionByUserId");
+    callback(null, result.recordset);
+  } catch (err) {
+    callback(err, null);
+  }
+};
+
+// Lấy số ngày còn lại của subscription
+const getUserSubscriptionDaysLeft = async (userId, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request()
+      .input("userId", sql.Int, userId)
+      .query("SELECT dbo.GetUserSubscriptionDaysLeft(@userId) AS daysLeft");
+    callback(null, result.recordset[0]);
+  } catch (err) {
+    callback(err, null);
+  }
+};
+
+// Gia hạn subscription bằng số ngày
+const extendSubscription = async (userId, days, callback) => {
+  try {
+    const pool = await connectDB();
+    await pool.request()
+      .input("userId", sql.Int, userId)
+      .input("days", sql.Int, days)
+      .execute("ExtendSubscription");
+    callback(null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+// Đăng ký subscription (tạo hoặc cập nhật)
+const subscribe = async (userId, days, callback) => {
+  try {
+    const pool = await connectDB();
+    await pool.request()
+      .input("userId", sql.Int, userId)
+      .input("days", sql.Int, days)
+      .execute("Subscribe");
+    callback(null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+// Hủy subscription
+const cancelSubscription = async (userId, callback) => {
+  try {
+    const pool = await connectDB();
+    await pool.request()
+      .input("userId", sql.Int, userId)
+      .execute("CancelSubscription");
+    callback(null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+// Gia hạn subscription (sử dụng ExtendSubscription với số ngày)
+const extendSubscriptions = async (userId, days, callback) => {
+  try {
+    const pool = await connectDB();
+    await pool.request()
+      .input("userId", sql.Int, userId)
+      .input("days", sql.Int, days)
+      .execute("ExtendSubscription");
+    callback(null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+// Lấy ngày kết thúc (end_date) theo userId
+const SelectEndDay = async (userId, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request()
+      .input("userId", sql.Int, userId)
+      .execute("SelectEndDay");
+    callback(null, result.recordset[0]);
+  } catch (err) {
+    callback(err, null);
+  }
+};
+
+module.exports = {
+  getAllSubscriptions,
+  getSubscriptionById,
+  getSubscriptionByUserId,
+  getUserSubscriptionDaysLeft,
+  extendSubscription,
+  subscribe,
+  cancelSubscription,
+  extendSubscriptions,
+  SelectEndDay,
 };

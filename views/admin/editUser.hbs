@@ -14,7 +14,7 @@
         <i class="bi bi-arrow-left"></i> Trở về
     </a>
     <h1 class="form-header">Thay đổi vai trò</h1>
-    <form action="/admin/user/{{user.id}}/edit" method="POST">
+    <form action="/admin/user/{{user.userId}}/edit" method="POST">
         <div class="form-group mb-3">
             <label for="userRole">Vai trò</label>
             <input type="text" class="form-control" value="{{user.role}}" id="userRole" name="role" placeholder="Nhập vai trò" required>

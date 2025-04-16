@@ -9,6 +9,7 @@ VALUES
     ('Jane', 'jane@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'writer', GETDATE()),
     ('Admin', 'admin@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'admin', GETDATE());
 GO
+-- 0909090909 password
 
 -- Thêm dữ liệu vào bảng categories
 INSERT INTO categories (name, parent_id, editorId) VALUES

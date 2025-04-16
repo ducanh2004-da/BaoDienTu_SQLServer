@@ -180,7 +180,7 @@ module.exports.EditPost = (req,res) =>{
         res.redirect('/admin');
     })
 }
-module.exports.Delay = (req,res) =>{
+/*module.exports.Delay = (req,res) =>{
     const userId = req.params.id;
     User.findById(userId,(err,user)=>{
         if(err){
@@ -206,4 +206,40 @@ module.exports.Delay = (req,res) =>{
             })
         })
     })
-}
+}*/
+module.exports.Delay = async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    try {
+      // Kiểm tra người dùng
+      const pool = await connectDB();
+      const userResult = await pool.request()
+        .input("id", sql.Int, userId)
+        .query("SELECT * FROM users WHERE id = @id");
+      const user = userResult.recordset[0];
+  
+      if (!user) {
+        return res.status(404).send("Người dùng không tồn tại.");
+      }
+  
+      // Kiểm tra subscription
+      const subscriptionResult = await pool.request()
+        .input("userId", sql.Int, userId)
+        .execute("GetSubscriptionByUserId");
+      const subscription = subscriptionResult.recordset;
+  
+      if (!subscription || subscription.length === 0) {
+        return res.status(404).send("Người dùng chưa có tài khoản subscriber.");
+      }
+  
+      // Gia hạn subscription thêm 7 ngày
+      await pool.request()
+        .input("userId", sql.Int, userId)
+        .input("days", sql.Int, 7)
+        .execute("ExtendSubscription");
+  
+      res.redirect("/admin");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Lỗi server");
+    }
+  };

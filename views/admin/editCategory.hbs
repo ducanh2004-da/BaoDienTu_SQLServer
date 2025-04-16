@@ -14,7 +14,7 @@
         <i class="bi bi-arrow-left"></i> Trở về
     </a>
     <h1 class="form-header">Thêm Danh Mục Mới</h1>
-    <form action="/admin/category/{{category.id}}/edit" method="POST">
+    <form action="/admin/category/{{category.CategoryId}}/edit" method="POST">
         <div class="form-group mb-3">
             <label for="categoryName">Tên Danh Mục</label>
             <input type="text" class="form-control" value="{{category.name}}" id="categoryName" name="name" placeholder="Nhập tên danh mục" required>

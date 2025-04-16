@@ -1,54 +1,55 @@
 const User = require('../models/user');
 
-module.exports.show = (req,res) =>{
-    const user = req.session.user;
-    // Định dạng ngày thành 'YYYY-MM-DD'
-    User.findById(req.session.user.id,(err,user)=>{
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (user.birthday) {
-            const formattedBirthday = new Date(user.birthday).toISOString().split('T')[0];
-            user.birthday = formattedBirthday; 
-        }
-        res.render('vwUser/profile',{
-            layout: "main",
-            title: "Hồ sơ cá nhân",
-            user: user
-        })
-    })
-}
-
-module.exports.viewEdit = (req,res) =>{
-    console.log(req.headers.referer);
-    req.session.retUrl = req.headers.referer;
-    res.render('vwUser/editProfile',{
-        layout: "main",
-        title: "Chỉnh sửa hồ sơ",
-        user: req.session.user
-    })
-}
-
-module.exports.Edit = (req,res) =>{
-    const id = req.session.user.id;
-    const user = req.body;
-
-    console.log(req.file)
-    if (!req.file) {
-        return res.status(400).send('Vui lòng tải lên một ảnh.');
+module.exports.show = (req, res) => {
+  // Lấy thông tin user chi tiết từ cơ sở dữ liệu qua stored procedure sp_FindUserById
+  User.findById(req.session.user.id, (err, user) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
     }
-
-    const allowedFormats = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (!allowedFormats.includes(req.file.mimetype)) {
-        return res.status(400).json({ error: 'File định dạng không hợp lệ!' });
+    if (user && user.birthday) {
+      // Định dạng ngày sinh theo 'YYYY-MM-DD'
+      const formattedBirthday = new Date(user.birthday).toISOString().split('T')[0];
+      user.birthday = formattedBirthday;
     }
+    res.render('vwUser/profile', {
+      layout: "main",
+      title: "Hồ sơ cá nhân",
+      user: user
+    });
+  });
+};
 
-    const imageUrl = req.file.path;
+module.exports.viewEdit = (req, res) => {
+  // Lưu lại URL hiện tại để quay lại sau khi cập nhật profile
+  req.session.retUrl = req.headers.referer || '/profile';
+  res.render('vwUser/editProfile', {
+    layout: "main",
+    title: "Chỉnh sửa hồ sơ",
+    user: req.session.user
+  });
+};
 
-    User.editUser(id,user,imageUrl,(err)=>{
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.redirect(req.session.retUrl);
-    })
-}
+module.exports.Edit = (req, res) => {
+  const id = req.session.user.id;
+  const userData = req.body;
+
+  // Kiểm tra xem có file được tải lên hay không
+  if (!req.file) {
+    return res.status(400).send('Vui lòng tải lên một ảnh.');
+  }
+
+  const allowedFormats = ['image/jpeg', 'image/png', 'image/jpg'];
+  if (!allowedFormats.includes(req.file.mimetype)) {
+    return res.status(400).json({ error: 'File định dạng không hợp lệ!' });
+  }
+
+  const imageUrl = req.file.path;
+
+  // Gọi hàm editUser trong model để cập nhật thông tin user qua stored procedure sp_EditUser
+  User.editUser(id, userData, imageUrl, (err) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.redirect(req.session.retUrl || '/profile');
+  });
+};

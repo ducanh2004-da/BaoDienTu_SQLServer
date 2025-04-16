@@ -15,7 +15,7 @@
     </a>
     <h1 class="user-header">Thông Tin Người Dùng</h1>
     <div class="user-detail">
-        <p><strong>ID:</strong>{{users.id}}</p>
+        <p><strong>ID:</strong>{{users.userId}}</p>
         <p><strong>Họ Tên:</strong> {{users.username}}</p>
         <p><strong>Email:</strong> {{users.email}}</p>
         <p><strong>Vai Trò:</strong> {{users.role}}</p>
@@ -24,11 +24,11 @@
     </div>
 
     <div class="user-actions">
-        <a href="/admin/user/{{users.id}}/edit" class="btn btn-edit">Chỉnh Sửa vai Trò</a>
+        <a href="/admin/user/{{users.userId}}/edit" class="btn btn-edit">Chỉnh Sửa vai Trò</a>
             {{#ifEquals users.role "subscriber"}}
-                <a href="/admin/user/{{users.id}}/delay" class="btn btn-success">Gia hạn tài khoản</a>
+                <a href="/admin/user/{{users.userId}}/delay" class="btn btn-success">Gia hạn tài khoản</a>
             {{/ifEquals}}
-        <form action="/admin/user/{{users.id}}/delete" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
+        <form action="/admin/user/{{users.userId}}/delete" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
             <button type="submit" class="btn btn-delete">Xóa Người Dùng</button>
         </form>
     </div>

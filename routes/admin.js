@@ -3,7 +3,7 @@ const router = express.Router();
 const AdminController = require('../controllers/admin');
 
 router.get('/',AdminController.showAll);
-router.get('/post/detail',AdminController.viewPost);
+router.get('/post/:id', AdminController.viewPost);
 router.post('/post/:id/accept',AdminController.acceptPost);
 router.post('/post/:id/notaccept',AdminController.notAcceptPost);
 router.post('/category/create',AdminController.addCategory)

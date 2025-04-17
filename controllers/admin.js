@@ -33,15 +33,29 @@ module.exports.showAll = (req,res) =>{
 })
 }
 )}
-module.exports.viewPost = (req,res) =>{
+/*module.exports.viewPost = (req,res) =>{
     Post.getAllPosts((err, posts) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
     res.render('admin/showPost',{posts: posts[0]});
     })
-}
-module.exports.acceptPost = (req,res) =>{
+}*/
+module.exports.viewPost = (req, res) => {
+    const postId = req.params.id;
+
+    Post.getPostById(postId, (err, post) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!post) {
+            return res.status(404).send('Không tìm thấy bài viết');
+        }
+
+        res.render('admin/showPost', { posts: post });
+    });
+};
+/*module.exports.acceptPost = (req,res) =>{
     const id = req.params.id;
     Post.updatePublished(id,(err)=>{
         if (err) {
@@ -49,7 +63,85 @@ module.exports.acceptPost = (req,res) =>{
         }
         res.redirect('/admin');
     })
-}
+}*/
+/*module.exports.acceptPost = async (req, res) => {
+    try {
+      const id = req.params.id;
+      
+      // Kiểm tra bài viết tồn tại trước
+      const post = await new Promise((resolve, reject) => {
+        Post.getPostById(id, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+      
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      
+      // Duyệt bài viết
+      await new Promise((resolve, reject) => {
+        Post.updatePublished(id, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
+      res.redirect('/admin');
+    } catch (err) {
+      console.error('Error accepting post:', err);
+      res.status(500).json({ error: err.message });
+    }
+  };*/
+module.exports.acceptPost = async (req, res) => {
+    try {
+      // Kiểm tra đăng nhập và quyền admin
+      if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).render('error', {
+          message: 'Bạn không có quyền thực hiện thao tác này'
+        });
+      }
+  
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).render('error', {
+          message: 'ID bài viết không hợp lệ'
+        });
+      }
+  
+      // Kiểm tra bài viết tồn tại
+      const post = await new Promise((resolve, reject) => {
+        Post.getPostById(id, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+  
+      if (!post) {
+        return res.status(404).render('error', {
+          message: 'Bài viết không tồn tại'
+        });
+      }
+  
+      // Duyệt bài viết
+      await new Promise((resolve, reject) => {
+        Post.updatePublished(id, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+  
+      req.flash('success', 'Duyệt bài viết thành công');
+      res.redirect('/admin');
+      
+    } catch (err) {
+      console.error('Lỗi khi duyệt bài viết:', err);
+      res.status(500).render('error', {
+        message: 'Đã xảy ra lỗi khi duyệt bài viết'
+      });
+    }
+  };
 module.exports.notAcceptPost = (req,res) =>{
     const id = req.params.id;
     Post.deletePost(id,(err)=>{

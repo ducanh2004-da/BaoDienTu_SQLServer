@@ -1,176 +1,157 @@
-const db = require("../utils/db");
-const {v4: uuidv4} = require("uuid");
+const { connectDB, sql } = require("../utils/db.js");
+const { v4: uuidv4 } = require("uuid");
 const validator = require("validator");
+const { get } = require("../config/email.js");
 
 //Prepared Statements for SQL Injection
 
 function validateInput(input) {
-    if (!validator.isAlphanumeric(input)) {
-      throw new Error("Dữ liệu không hợp lệ!");
-    }
-    return input;
+  if (!validator.isAlphanumeric(input)) {
+    throw new Error("Dữ liệu không hợp lệ!");
   }
+  return input;
+}
 
-const getNextId = (tableName, callback) => {
-    const query = "SHOW TABLE STATUS WHERE Name = ?";
-    db.query(query, [tableName], (err, results) => {
-        if (err) {
-            return callback(err, null);
-        }
+const getPostCount = async (callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request().execute("GetAllPostsPremium");
 
-        const nextId = results[0]?.Auto_increment;
-        callback(null, nextId);
-    });
-};
-const insertArticle = (article, callback) => {
-    const postId = uuidv4(); 
-    const query = `
-        INSERT INTO posts
-        (id,title,  publish_date, abstract, content, tags, statusName, created_at, updated_at, userId, premium)
-        VALUES (?,?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)
-    `;
+    // Đếm số lượng bài viết từ recordset
+    const count = result.recordset.length;
 
-    db.query(
-        query,
-        [
-            postId,
-            validateInput(article.title),
-            article.publish_date || null,
-            validateInput(article.abstract),
-            article.content,
-            article.tags,
-            "Pending-Approval",
-            article.userId,
-            article.is_premium
-        ],
-        (err, result) => {
-            if (err) return callback(err);
-
-            // Insert into post_categories for multiple categories
-            if (article.categories && article.categories.length > 0) {
-                const categoryQuery = `
-                    INSERT INTO post_categories (postId, categoryId)
-                    VALUES ?
-                `;
-                const categoryValues = article.categories.map((catId) => [
-                    result.insertId,
-                    catId,
-                ]);
-                db.query(categoryQuery, [categoryValues], callback);
-            } else {
-                callback(null, result);
-            }
-        }
-    );
+    // Gọi lại callback với số lượng bài viết
+    callback(null, count);
+  } catch (err) {
+    callback(err);
+  }
 };
 
+const insertArticle = async (article, callback) => {
+  try {
+    const pool = await connectDB();
+    console.log("Article:", article);
+    // Gọi stored procedure để insert post
+    await pool
+      .request()
+      .input("title", sql.NVarChar, article.title)
+      .input("abstract", sql.NVarChar, article.abstract)
+      .input("content", sql.NVarChar(sql.MAX), article.content)
+      .input('publish_date',  sql.DateTime,  null)
+      .input("tags", sql.NVarChar, article.tags)
+      .input("statusName", sql.NVarChar, "Pending-Approval")
+      .input("userId", sql.Int, article.userId)
+      .input("premium", sql.Bit, article.is_premium)
+      .execute("InsertArticle");
 
-const getArticlesByStatus = (statusName, userId, callback) => {
-    if (statusName === "all") {
-        const query = `
-            SELECT posts.*, GROUP_CONCAT(categories.name) AS categories
-            FROM posts
-                     LEFT JOIN post_categories ON posts.id = post_categories.postId
-                     LEFT JOIN categories ON post_categories.categoryId = categories.id
-            WHERE posts.userId=?
-            GROUP BY posts.id
-        `;
-        db.query(query, [userId], callback);
-    } else {
-        const query = `
-            SELECT posts.*, GROUP_CONCAT(categories.name) AS categories
-            FROM posts
-                     LEFT JOIN post_categories ON posts.id = post_categories.postId
-                     LEFT JOIN categories ON post_categories.categoryId = categories.id
-            WHERE posts.statusName=? AND posts.userId=?
-            GROUP BY posts.id
-        `;
-        db.query(query, [statusName, userId], callback);
-    }
+    await pool
+      .request()
+      .input("postId", sql.Int, article.nextPostId)
+      .input("categoryId", sql.Int, article.category)
+      .execute("InsertPostCategories");
+  } catch (err) {
+    console.error("Error inserting article:", err);
+    callback(err);
+  }
 };
 
-const getArticlesByUserId = (userId, callback) => {
-    const query = `
-        SELECT posts.*, GROUP_CONCAT(categories.name) AS categories
-        FROM posts
-                 LEFT JOIN post_categories ON posts.id = post_categories.postId
-                 LEFT JOIN categories ON post_categories.categoryId = categories.id
-        WHERE posts.userId = ?
-        GROUP BY posts.id
-        ORDER BY posts.updated_at DESC
-    `;
-
-    db.query(query, [userId], callback);
+const getArticlesByStatus = async (statusName, userId, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("postId", sql.NVarChar, statusName)
+      .input("userId", sql.Int, userId)
+      .execute("GetArticlesByStatus");
+    callback(null, result.recordset[0] || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
-const getArticlesById = (id, callback) => {
-    const query = `
-        SELECT posts.*, GROUP_CONCAT(categories.name) AS categories
-        FROM posts
-                 LEFT JOIN post_categories ON posts.id = post_categories.postId
-                 LEFT JOIN categories ON post_categories.categoryId = categories.id
-        WHERE posts.id=?
-        GROUP BY posts.id
-        ORDER BY posts.updated_at DESC
-    `;
+const getArticlesByUserId = async (userId, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("userId", sql.Int, userId)
+      .execute("GetArticlesByUserId");
 
-    db.query(query, [id], callback);
+    callback(null, result.recordset || null);
+  } catch (err) {
+    console.error("Error getting articles by userId:", err);
+    callback(err); // Gọi callback với lỗi nếu có
+  }
 };
 
-const updateArticle = (article, callback) => {
-    const query = `
-        UPDATE posts
-        SET title = ?, abstract = ?, content = ?, statusName = ?, updated_at = NOW(), tags = ?, premium = ?
-        WHERE id = ?
-    `;
-    db.query(
-        query,
-        [
-            validateInput(article.title),
-            validateInput(article.abstract),
-            article.content,
-            "Pending-Approval",
-            article.tags,
-            article.is_premium,
-            article.id,
-        ],
-        (err, result) => {
-            if (err) return callback(err);
-
-            // Update post_categories
-            const deleteQuery = `DELETE FROM post_categories WHERE postId = ?`;
-            db.query(deleteQuery, [article.id], (deleteErr) => {
-                if (deleteErr) return callback(deleteErr);
-
-                if (article.categories && article.categories.length > 0) {
-                    const categoryQuery = `
-                        INSERT INTO post_categories (postId, categoryId)
-                        VALUES ?
-                    `;
-                    const categoryValues = article.categories.map((catId) => [
-                        article.id,
-                        catId,
-                    ]);
-                    db.query(categoryQuery, [categoryValues], callback);
-                } else {
-                    callback(null, result);
-                }
-            });
-        }
-    );
+const getArticleById = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, id)
+      .execute("GetArticleById ");
+    callback(null, result.recordset || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
-const getCategoryById = (id, callback) => {
-    const query = "SELECT name FROM categories WHERE id = ?";
-    db.query(query, [id], callback);
+const updateArticle = async (article, callback) => {
+  try {
+    const pool = await connectDB();
+    await pool
+      .request()
+      .input("postId", sql.Int, article.postId)
+      .input("title", sql.NVarChar, article.title)
+      .input("abstract", sql.NVarChar, article.abstract)
+      .input("content", sql.NVarChar(sql.MAX), article.content)
+      .input("statusName", sql.NVarChar, "Pending-Approval")
+      .input("tags", sql.NVarChar, article.tags)
+      .input("premium", sql.Bit, article.is_premium)
+      .execute("UpdateArticle");
+
+    await pool
+      .request()
+      .input("postId", sql.Int, article.postId)
+      .input("categoryId", sql.Int, article.category)
+      .execute("InsertPostCategories");
+  } catch (err) {
+    console.error("Lỗi khi update article:", err);
+    callback(err);
+  }
+};
+
+const getCategoryById = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("categoryId", sql.Int, id)
+      .execute("GetCategoryById");
+    callback(null, result.recordset[0] || null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+const getAllCategories = async (callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request().execute("GetAllCategories");
+    callback(null, result.recordset);
+  } catch (err) {
+    callback(err, null);
+  }
 };
 
 module.exports = {
-    insertArticle,
-    getNextId,
-    getArticlesByStatus,
-    getArticlesByUserId,
-    getArticlesById,
-    updateArticle,
-    getCategoryById,
+  getAllCategories,
+  insertArticle,
+  getPostCount,
+  getArticlesByStatus,
+  getArticlesByUserId,
+  getArticleById,
+  updateArticle,
+  getCategoryById,
 };

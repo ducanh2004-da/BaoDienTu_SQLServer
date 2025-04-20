@@ -1,12 +1,11 @@
 // models/category.js
-const { connectDB, sql } = require('../utils/db');
+const { connectDB, sql } = require("../utils/db");
 
 // 1. Lấy tất cả danh mục
 const getAllCategories = async (callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .execute('GetAllCategories');
+    const result = await pool.request().execute("GetAllCategories");
     callback(null, result.recordset);
   } catch (err) {
     callback(err, null);
@@ -17,11 +16,12 @@ const getAllCategories = async (callback) => {
 const add = async (editorId, parentId, newCat, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('editorId', sql.Int, editorId)
-      .input('parentId', sql.Int, parentId)
-      .input('name', sql.NVarChar(255), newCat.name)
-      .execute('AddCategory');
+    await pool
+      .request()
+      .input("editorId", sql.Int, editorId)
+      .input("parentId", sql.Int, parentId)
+      .input("name", sql.NVarChar(255), newCat.name)
+      .execute("AddCategory");
     callback(null);
   } catch (err) {
     callback(err);
@@ -32,10 +32,11 @@ const add = async (editorId, parentId, newCat, callback) => {
 const update = async (id, Cat, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .input('name', sql.NVarChar(255), Cat.name)
-      .execute('UpdateCategory');
+    await pool
+      .request()
+      .input("id", sql.Int, id)
+      .input("name", sql.NVarChar(255), Cat.name)
+      .execute("UpdateCategory");
     callback(null);
   } catch (err) {
     callback(err);
@@ -46,9 +47,10 @@ const update = async (id, Cat, callback) => {
 const getCatById = async (id, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .execute('GetCategoryById');
+    const result = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .execute("GetCategoryById");
     callback(null, result.recordset[0]);
   } catch (err) {
     callback(err, null);
@@ -59,9 +61,7 @@ const getCatById = async (id, callback) => {
 const deletes = async (id, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .execute('DeleteCategory');
+    await pool.request().input("id", sql.Int, id).execute("DeleteCategory");
     callback(null);
   } catch (err) {
     callback(err);
@@ -72,8 +72,7 @@ const deletes = async (id, callback) => {
 const getParentCat = async (callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .execute('GetParentCategories');
+    const result = await pool.request().execute("GetParentCategories");
     callback(null, result.recordset);
   } catch (err) {
     callback(err, null);
@@ -84,9 +83,10 @@ const getParentCat = async (callback) => {
 const getEditorCats = async (editorId, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('editorId', sql.Int, editorId)
-      .execute('GetEditorCategories');
+    const result = await pool
+      .request()
+      .input("editorId", sql.Int, editorId)
+      .execute("GetEditorCategories");
     callback(null, result.recordset);
   } catch (err) {
     callback(err, null);
@@ -97,9 +97,10 @@ const getEditorCats = async (editorId, callback) => {
 const getPostCategoryId = async (postId, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('postId', sql.Int, postId)
-      .execute('GetPostCategoryIds');
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .execute("GetPostCategoryIds");
     callback(null, result.recordset);
   } catch (err) {
     callback(err, null);
@@ -110,9 +111,10 @@ const getPostCategoryId = async (postId, callback) => {
 const getPostCategories = async (postId, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('postId', sql.Int, postId)
-      .execute('GetPostCategories');
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .execute("GetPostCategories");
     callback(null, result.recordset);
   } catch (err) {
     callback(err, null);
@@ -123,9 +125,10 @@ const getPostCategories = async (postId, callback) => {
 const getCategoriesByIds = async (ids, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('ids', sql.NVarChar(sql.MAX), ids)
-      .execute('GetCategoriesByIds');
+    const result = await pool
+      .request()
+      .input("ids", sql.NVarChar(sql.MAX), ids)
+      .execute("GetCategoriesByIds");
     callback(null, result.recordset);
   } catch (err) {
     callback(err, null);
@@ -142,7 +145,7 @@ module.exports = {
   getEditorCats,
   getPostCategoryId,
   getPostCategories,
-  getCategoriesByIds
+  getCategoriesByIds,
 };
 
 /*

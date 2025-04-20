@@ -74,7 +74,7 @@
                     thumbnailURL = URL.createObjectURL(thumbnailFile);
                 }
                 else {
-                    thumbnailURL = "/public/posts/imgs/{{article.id}}/thumbnail.jpg";
+                    thumbnailURL = "/public/posts/imgs/{{article.postId}}/thumbnail.jpg";
                 }
 
                 const views = 0;  // Placeholder for views count
@@ -86,7 +86,7 @@
     </script>
 
     <script>
-        const imagePath = "/public/posts/imgs/{{article.id}}/thumbnail.jpg";
+        const imagePath = "/public/posts/imgs/{{article.postId}}/thumbnail.jpg";
         $("#thumbnail").fileinput({
             dropZoneEnabled: false,
             showUpload: false,
@@ -165,7 +165,7 @@
 </div>
 
 <main class="container my-4">
-    <form action="/writer/fix-article/submit?id={{article.id}}" method="POST" enctype="multipart/form-data" id="edit-article-form">
+    <form action="/writer/fix-article/submit?id={{article.postId}}" method="POST" enctype="multipart/form-data" id="edit-article-form">
     <div class="form-group">
         <label for="title">Tiêu đề bài viết</label>
         <input type="text" class="form-control" id="title" name="title" value="{{article.title}}" required/>
@@ -188,20 +188,9 @@
 
     <div class="form-group">
         <label for="category">Chuyên mục</label>
-        <select class="form-control" id="category" name="category[]" required multiple="multiple">
-            <option value="" disabled>Chọn chuyên mục</option>
+        <select class="form-control" id="category" name="category[]" required multiple>
             {{#each categories}}
-                <optgroup label="{{this.name}}">
-                    {{#if (length this.children)}}
-                        {{#each this.children}}
-                            {{#if (includes ../../postCategories this)}}
-                                <option value="{{this.id}}" selected>{{this.name}}</option>
-                            {{else}}
-                                <option value="{{this.id}}">{{this.name}}</option>
-                            {{/if}}
-                        {{/each}}
-                    {{/if}}
-                </optgroup>
+            <option value="{{this.categoryId}}">{{this.name}}</option>
             {{/each}}
         </select>
     </div>
@@ -225,7 +214,7 @@
                     </svg></span>
                 </div>
             {{/each}}
-        </div>
+        </div>  
     </div>
 <!--    is premium post-->
     <div class="form-check mb-3">

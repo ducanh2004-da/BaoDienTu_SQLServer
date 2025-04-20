@@ -1,14 +1,14 @@
 -- Chọn cơ sở dữ liệu
-USE baodientu8;
+USE baodientu;
 GO
 
 -- Thêm dữ liệu vào bảng users
 INSERT INTO users (username, email, password, role, created_at)
 VALUES
     ('John', 'john@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'subscriber', GETDATE()),
-    ('Jane', 'jane@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'writer', GETDATE()),
-    ('Admin', 'admin@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'admin', GETDATE());
-    ('Editor', 'editor@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'editor', GETDATE());
+    ('Jane', 'jane@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'editor', GETDATE()),
+    ('Admin', 'admin@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'admin', GETDATE()),
+    ('writer', 'writer@example.com', '$2a$10$Ufb9xTeA.1.e08gvS8KZt.uoREaCkyhJrrNMXwN1ExfB2SXyQ8bv.', 'writer', GETDATE());
 GO
 -- 0909090909 password
 
@@ -17,11 +17,11 @@ INSERT INTO categories (name, parent_id, editorId) VALUES
     ('Technology', NULL, NULL),
     ('Lifestyle', NULL, NULL),
     ('Education', NULL, NULL),
-    ('AI', 1, 4),
-    ('Gadgets', 1, 4),
-    ('Health', 2, 4),
-    ('Travel', 2, 4),
-    ('Online Courses', 3, 4);
+    ('AI', 1, 2),
+    ('Gadgets', 1, 2),
+    ('Health', 2, 2),
+    ('Travel', 2, 2),
+    ('Online Courses', 3, 2);
 GO
 
 -- Thêm dữ liệu vào bảng posts

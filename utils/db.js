@@ -27,4 +27,14 @@ async function connectDB() {
     }
 }
 
-module.exports = { connectDB, sql };
+
+async function closeDB() {
+  try {
+    await sql.close();
+    console.log("Đóng kết nối SQL Server thành công!");
+  } catch (err) {
+    console.error("Lỗi khi đóng kết nối:", err.message);
+  }
+}
+
+module.exports = { connectDB, closeDB, sql };

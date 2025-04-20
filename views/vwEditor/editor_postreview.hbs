@@ -88,7 +88,7 @@
     <div class="container-fluid bg-light p-4 rounded-lg shadow-lg my-4">
         <form action="/editor/article-update" method="POST" id="review-form">
             <!-- Post ID -->
-            <input type="hidden" name="post-id" value="{{article.id}}" readonly/>
+            <input type="hidden" name="post-id" value="{{article.postId}}" readonly/>
             <!-- Title Input -->
             <div class="form-group">
                 <label for="post-title">Tiêu đề bài viết</label>
@@ -112,7 +112,7 @@
             <!-- Thumbnail Image -->
             <div class="form-group">
                 <label for="post-thumbnail">Ảnh nền</label>
-                <img src="/public/posts/imgs/{{article.id}}/thumbnail.jpg" alt="Post Thumbnail" class="img-thumbnail" id="post-thumbnail" style="display: block; height: 100%; max-width: 400px"/>
+                <img src="/public/posts/imgs/{{article.postId}}/thumbnail.jpg" alt="Post Thumbnail" class="img-thumbnail" id="post-thumbnail" style="display: block; height: 100%; max-width: 400px"/>
             </div>
 
             <!-- Author -->
@@ -144,7 +144,7 @@
                 </div>
             </div>
         </form>
-        <form action="/editor/post/{{article.id}}/accept" method="POST">
+        <form action="/editor/post/{{article.postId}}/accept" method="POST">
         <button style="margin-left:40%;" type="submit" class="btn btn-success btn-lg d-flex align-items-center gap-2">
             <i class="fas fa-check"></i> Duyệt luôn(không lên lịch)
         </button>
@@ -165,7 +165,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn btn-success" onclick="submitApproval({{article.id}})">Xác nhận</button>
+                        <button type="button" class="btn btn-success" onclick="submitApproval({{article.postId}})">Xác nhận</button>
                     </div>
                 </div>
             </div>
@@ -179,7 +179,7 @@
         <h5 class="modal-title" id="scheduleModalLabel">Chỉnh thời gian đăng bài</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="/editor/post/{{article.id}}/schedule" method="POST">
+      <form action="/editor/post/{{article.postId}}/schedule" method="POST">
         <div class="modal-body">
           <div class="form-group">
             <label for="publish_date">Chọn thời gian đăng bài:</label>
@@ -222,7 +222,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn btn-danger" onclick="submitRejection({{article.id}})">Xác nhận</button>
+                        <button type="button" class="btn btn-danger" onclick="submitRejection({{article.postId}})">Xác nhận</button>
                     </div>
                 </div>
             </div>

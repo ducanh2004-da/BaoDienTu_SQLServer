@@ -145,15 +145,8 @@
         <div class="form-group">
             <label for="category">Chuyên mục</label>
             <select class="form-control" id="category" name="category[]" required multiple>
-                <option value="" selected disabled>Chọn chuyên mục</option>
                 {{#each categories}}
-                    <optgroup label="{{this.name}}">
-                        {{#if (length this.children)}}
-                            {{#each this.children}}
-                                <option value="{{this.id}}">{{this.name}}</option>
-                            {{/each}}
-                        {{/if}}
-                    </optgroup>
+                    <option value="{{this.categoryId}}">{{this.name}}</option>
                 {{/each}}
             </select>
         </div>

@@ -158,12 +158,12 @@ module.exports = {
             return res.status(404).send("Bài viết không tồn tại hoặc chưa được xuất bản");
           }
           const tags = post.tags?.split(",").map((tag) => tag.trim());
-          postModel.getPostAuthorInfo(post.id, (err, author) => {
+          postModel.getPostAuthorInfo(post.postId, (err, author) => {
             if (err) {
               console.error("Lỗi khi lấy thông tin tác giả:", err);
               return res.status(500).send("Không thể lấy thông tin tác giả");
             }
-            categoryModel.getPostCategories(post.id, (err, cats) => {
+            categoryModel.getPostCategories(post.postId, (err, cats) => {
               if (err) {
                 console.error("Lỗi khi lấy thông tin:", err);
                 return res.status(500).send("Không thể lấy thông tin");
@@ -301,7 +301,7 @@ module.exports = {
 
   likePost: (req, res) => {
     const { id } = req.params;
-    const userId = req.session.user.id;
+    const userId = req.session.user.userId;
     if (req.session.isUser) {
       postModel.updateLike(id, userId, (err) => {
         if (err) {
@@ -458,7 +458,7 @@ module.exports = {
 
   showSubscription: (req, res) => {
     const { user, isUser, isSubscriber } = req.session;
-    subscriptionModel.getSubscriptionByUserId(user.id, (err, subscription) => {
+    subscriptionModel.getSubscriptionByUserId(user.userId, (err, subscription) => {
       if (err) {
         console.error("Lỗi khi lấy thông tin đăng ký:", err);
         return res.status(500).send("Không thể lấy thông tin đăng ký");
@@ -472,7 +472,7 @@ module.exports = {
           isSubscriber,
         });
       } else {
-        subscriptionModel.getUserSubscriptionDaysLeft(user.id, (err, daysLeft) => {
+        subscriptionModel.getUserSubscriptionDaysLeft(user.userId, (err, daysLeft) => {
           if (err) {
             console.error("Lỗi khi lấy số ngày còn lại của đăng ký:", err);
             return res.status(500).send("Không thể lấy số ngày còn lại của người dùng");
@@ -499,7 +499,7 @@ module.exports = {
       };
       return res.redirect("/main");
     }
-    subscriptionModel.subscribe(req.session.user.id, 30, (err) => {
+    subscriptionModel.subscribe(req.session.user.userId, 30, (err) => {
       if (err) {
         console.log(err);
         return res.status(500).send("Lỗi khi tạo đăng ký");
@@ -514,7 +514,7 @@ module.exports = {
 
   extendSubscription: (req, res) => {
     const { user } = req.session;
-    subscriptionModel.getSubscriptionByUserId(user.id, (err, subscription) => {
+    subscriptionModel.getSubscriptionByUserId(user.userId, (err, subscription) => {
       if (err) {
         console.error("Lỗi khi lấy thông tin đăng ký:", err);
         return res.status(500).send("Không thể lấy thông tin đăng ký");
@@ -526,7 +526,7 @@ module.exports = {
         };
         return res.redirect("/main");
       }
-      subscriptionModel.extendSubscription(user.id, 30, (err) => {
+      subscriptionModel.extendSubscription(user.userId, 30, (err) => {
         if (err) {
           console.log(err);
           return res.status(500).send("Lỗi khi gia hạn đăng ký");
@@ -543,7 +543,7 @@ module.exports = {
   comment: (req, res) => {
     const { id } = req.params;
     const { content } = req.body;
-    const userId = req.session.user.id;
+    const userId = req.session.user.userId;
     commentModel.addComment(id, userId, content, (err) => {
       if (err) {
         console.error("Lỗi khi thêm bình luận:", err);

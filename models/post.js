@@ -1,12 +1,11 @@
 // models/post.js
-const { connectDB, sql } = require('../utils/db');
+const { connectDB, sql } = require("../utils/db");
 
 // 1. Lấy tất cả bài viết (premium first)
 const getAllPosts = async (callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .execute('GetAllPostsPremium');
+    const result = await pool.request().execute("GetAllPostsPremium");
     callback(null, result.recordset);
   } catch (err) {
     callback(err);
@@ -17,9 +16,10 @@ const getAllPosts = async (callback) => {
 const getPostById = async (id, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .execute('GetPostById');
+    const result = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .execute("GetPostById");
     callback(null, result.recordset[0]);
   } catch (err) {
     callback(err);
@@ -30,9 +30,10 @@ const getPostById = async (id, callback) => {
 const updatePublished = async (id, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .execute('UpdatePublished');
+    await pool
+      .request()
+      .input("postId", sql.Int, id)
+      .execute("UpdatePublished");
     callback(null);
   } catch (err) {
     callback(err);
@@ -43,10 +44,11 @@ const updatePublished = async (id, callback) => {
 const updateScheduledPublishDate = async (id, publishDate, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .input('publishDate', sql.DateTime, publishDate)
-      .execute('UpdateScheduledPublishDate');
+    await pool
+      .request()
+      .input("id", sql.Int, id)
+      .input("publishDate", sql.DateTime, publishDate)
+      .execute("UpdateScheduledPublishDate");
     callback(null);
   } catch (err) {
     callback(err);
@@ -57,9 +59,10 @@ const updateScheduledPublishDate = async (id, publishDate, callback) => {
 const getPostAuthorInfo = async (id, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .execute('GetPostAuthorInfo');
+    const result = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .execute("GetPostAuthorInfo");
     callback(null, result.recordset[0]);
   } catch (err) {
     callback(err);
@@ -70,12 +73,13 @@ const getPostAuthorInfo = async (id, callback) => {
 const updatePost = async (id, post, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .input('title', sql.NVarChar(255), post.title)
-      .input('abstract', sql.NVarChar(sql.MAX), post.abstract)
-      .input('content', sql.NVarChar(sql.MAX), post.content)
-      .execute('UpdatePost');
+    await pool
+      .request()
+      .input("id", sql.Int, id)
+      .input("title", sql.NVarChar(255), post.title)
+      .input("abstract", sql.NVarChar(sql.MAX), post.abstract)
+      .input("content", sql.NVarChar(sql.MAX), post.content)
+      .execute("UpdatePost");
     callback(null);
   } catch (err) {
     callback(err);
@@ -86,9 +90,7 @@ const updatePost = async (id, post, callback) => {
 const deletePost = async (id, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .execute('DeletePost');
+    await pool.request().input("id", sql.Int, id).execute("DeletePost");
     callback(null);
   } catch (err) {
     callback(err);
@@ -100,17 +102,18 @@ async function get5PostsByCatNoPremium(categoryId, callback) {
     // Kết nối (pool) đến SQL Server
     const pool = await connectDB();
     // Thực thi thủ tục
-    const result = await pool.request()
-      .input('categoryId', sql.Int, categoryId)
-      .execute('get5PostsByCatNoPremium');
-      callback(null, result.recordset); // result.recordset là mảng các bản ghi
+    const result = await pool
+      .request()
+      .input("categoryId", sql.Int, categoryId)
+      .execute("get5PostsByCatNoPremium");
+    callback(null, result.recordset); // result.recordset là mảng các bản ghi
     // result.recordset là mảng các bản ghi
   } catch (err) {
-    console.error('Error in get5PostsByCatNoPremium:', err);
+    console.error("Error in get5PostsByCatNoPremium:", err);
     throw err;
   } finally {
     // Giải phóng kết nối nếu cần
-    // await sql.close(); 
+    // await sql.close();
     // (nếu bạn không tái sử dụng pool; thường để pool mở liên tục)
   }
 }
@@ -119,9 +122,7 @@ async function get5PostsByCatNoPremium(categoryId, callback) {
 const updateView = async (id, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('id', sql.Int, id)
-      .execute('UpdateView');
+    await pool.request().input("id", sql.Int, id).execute("UpdateView");
     callback(null);
   } catch (err) {
     callback(err);
@@ -132,10 +133,11 @@ const updateView = async (id, callback) => {
 const updateLike = async (postId, userId, callback) => {
   try {
     const pool = await connectDB();
-    await pool.request()
-      .input('postId', sql.Int, postId)
-      .input('userId', sql.Int, userId)
-      .execute('UpdateLike');
+    await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .input("userId", sql.Int, userId)
+      .execute("UpdateLike");
     callback(null);
   } catch (err) {
     callback(err);
@@ -146,10 +148,11 @@ const updateLike = async (postId, userId, callback) => {
 const isLiked = async (postId, userId, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('postId', sql.Int, postId)
-      .input('userId', sql.Int, userId)
-      .execute('GetIsLiked');
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .input("userId", sql.Int, userId)
+      .execute("GetIsLiked");
     callback(null, result.recordset[0].liked === 1);
   } catch (err) {
     callback(err);
@@ -160,9 +163,10 @@ const isLiked = async (postId, userId, callback) => {
 const getLikes = async (postId, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('postId', sql.Int, postId)
-      .execute('GetLikesCount');
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .execute("GetLikesCount");
     callback(null, result.recordset[0].likes);
   } catch (err) {
     callback(err);
@@ -173,9 +177,10 @@ const getLikes = async (postId, callback) => {
 const isPremium = async (id, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .query('SELECT dbo.IsPremium(@id) AS premium');
+    const result = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query("SELECT dbo.IsPremium(@id) AS premium");
     callback(null, result.recordset[0].premium);
   } catch (err) {
     callback(err);
@@ -186,9 +191,10 @@ const isPremium = async (id, callback) => {
 const getPostCategories = async (postId, callback) => {
   try {
     const pool = await connectDB();
-    const result = await pool.request()
-      .input('postId', sql.Int, postId)
-      .execute('GetPostCategories');
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .execute("GetPostCategories");
     callback(null, result.recordset);
   } catch (err) {
     callback(err);
@@ -199,25 +205,30 @@ const getPostCategories = async (postId, callback) => {
 const insertLike = (postId, userId, callback) => {
   // vẫn giữ nếu cần insert thủ công
   const q = `INSERT INTO likes (postId, userId) VALUES (@postId, @userId)`;
-  connectDB().then(pool =>
-    pool.request()
-      .input('postId', sql.Int, postId)
-      .input('userId', sql.Int, userId)
-      .query(q, callback)
-  ).catch(callback);
+  connectDB()
+    .then((pool) =>
+      pool
+        .request()
+        .input("postId", sql.Int, postId)
+        .input("userId", sql.Int, userId)
+        .query(q, callback)
+    )
+    .catch(callback);
 };
 
 const deleteLike = (postId, userId, callback) => {
   // vẫn giữ nếu cần delete thủ công
   const q = `DELETE FROM likes WHERE postId = @postId AND userId = @userId`;
-  connectDB().then(pool =>
-    pool.request()
-      .input('postId', sql.Int, postId)
-      .input('userId', sql.Int, userId)
-      .query(q, callback)
-  ).catch(callback);
+  connectDB()
+    .then((pool) =>
+      pool
+        .request()
+        .input("postId", sql.Int, postId)
+        .input("userId", sql.Int, userId)
+        .query(q, callback)
+    )
+    .catch(callback);
 };
-
 
 // Các hàm liên quan category/posts dynamic (giữ nguyên hoặc refactor tuỳ bạn)
 // getPostsByCategory, getPostsByCategoryNoPremium, get5PostsByCat, get5PostsByCatNoPremium,

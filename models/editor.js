@@ -1,125 +1,161 @@
-const db = require("../utils/db");
+const { connectDB, sql } = require("../utils/db.js");
 
 //Prepared Statements for SQL Injection
 
-const getAllPosts = (callback) => {
-    db.query("SELECT * FROM posts", callback);
+const getAllPosts = async (callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool.request().execute("GetAllPosts");
+    callback(null, result.recordset || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
-const getPostById = (id, callback) => {
-    db.query("SELECT * FROM posts WHERE id = ?", [id], callback);
+const getPostById = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, id)
+      .execute("GetPostById");
+    callback(null, result.recordset[0] || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
-const updatePublished = (id, callback) => {
-    db.query(
-        "UPDATE posts SET statusName = 'Published' WHERE id = ? ",
-        [id],
-        callback
+const updatePublished = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, id)
+      .execute("UpdatePublished");
+    callback(null, result.recordset[0] || null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+const getArticlesByStatusOfEditor = async (statusName, editorId, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("editorId", sql.Int, editorId)
+      .input("statusName", sql.NVarChar, statusName)
+      .execute("GetArticlesByStatusOfEditor");
+    callback(null, result.recordset || null);
+  } catch (err) {
+    callback(err);
+  }
+};
+
+const isPostInEditorCategories = async (postId, editorId, callback) => {
+  try {
+    const pool = await connectDB();
+
+    // Gọi procedure để lấy danh mục do editor phụ trách
+    const editorResult = await pool
+      .request()
+      .input("editorId", sql.Int, editorId)
+      .execute("GetEditorCategories");
+
+    const editorCategoryIds = editorResult.recordset.map(
+      (cat) => cat.categoryId
     );
+
+    const postResult = await pool
+      .request()
+      .input("postId", sql.Int, postId)
+      .execute("GetPostCategoryIds");
+
+    const postCategoryIds = postResult.recordset.map((cat) => cat.categoryId);
+
+    // Kiểm tra xem bài viết có thuộc danh mục của editor không
+    const isInEditorCategories = postCategoryIds.some((catId) =>
+      editorCategoryIds.includes(catId)
+    );
+
+    callback(null, isInEditorCategories);
+  } catch (err) {
+    console.error("❌ Lỗi xảy ra:", err);
+    callback(err);
+  }
 };
 
-const getArticlesByStatusOfEditor = (statusName, editorId, callback) => {
-    let query = `
-        SELECT posts.*, GROUP_CONCAT(categories.name) AS categories
-        FROM posts
-        LEFT JOIN post_categories ON posts.id = post_categories.postId
-        LEFT JOIN categories ON post_categories.categoryId = categories.id
-        WHERE posts.statusName = ? AND categories.editorId = ?
-        GROUP BY posts.id
-    `;
-    db.query(query, [statusName, editorId], callback);
-}
-
-const isPostInEditorCategories = (postId, editorId, callback) => {
-    // Query to get the categories the editor is in charge of
-    const getEditorCategoriesQuery = `
-        SELECT id
-        FROM categories
-        WHERE editorId = ?
-    `;
-
-    db.query(getEditorCategoriesQuery, [editorId], (err, editorCategories) => {
-        if (err) return callback(err);
-
-        const editorCategoryIds = editorCategories.map(cat => cat.id);
-
-        // Query to get the category of the post
-        const getPostCategoryQuery = `
-            SELECT categoryId
-            FROM post_categories
-            WHERE postId = ?
-        `;
-
-        db.query(getPostCategoryQuery, [postId], (err, postCategories) => {
-            if (err) return callback(err);
-
-            const postCategoryIds = postCategories.map(cat => cat.categoryId);
-
-            // Check if any of the post's categories are in the editor's categories
-            const isInEditorCategories = postCategoryIds.some(catId => editorCategoryIds.includes(catId));
-
-            callback(null, isInEditorCategories);
-        });
-    });
+const getArticleById = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("postId", sql.Int, id)
+      .execute("getArticleById");
+    callback(null, result.recordset || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
-const getArticleById = (id, callback) => {
-    const query = `
-        SELECT posts.*, GROUP_CONCAT(categories.name) AS categories
-        FROM posts
-        LEFT JOIN post_categories ON posts.id = post_categories.postId
-        LEFT JOIN categories ON post_categories.categoryId = categories.id
-        WHERE posts.id = ?
-        GROUP BY posts.id
-    `;
-    db.query(query, [id], callback);
-};
+const getCategoriesByIds = async (ids, callback) => {
+  try {
+    const pool = await connectDB();
+    const idsString = ids.join(",");
+    console.log(idsString);
+    const result = await pool
+      .request()
+      .input("ids", sql.NVarChar(sql.MAX), idsString)
+      .execute("GetCategoriesByIds");
 
-const getCategoriesByIds = (ids, callback) => {
-    const query = "SELECT id, name FROM categories WHERE id IN (?)";
-    db.query(query, [ids], callback);
+    callback(null, result.recordset || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
 const getUsersByIds = (ids, callback) => {
-    const query = "SELECT id, username FROM users WHERE id IN (?)";
-    db.query(query, [ids], callback);
+  const query = "SELECT id, username FROM users WHERE id IN (?)";
+  query(query, [ids], callback);
 };
 
-const getCategoryById = (id, callback) => {
-    const query = "SELECT name FROM categories WHERE id=?";
-    db.query(query, [id], callback);
+const getCategoryById = async (id, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("categoryId", sql.Int, id)
+      .execute("GetCategoryById");
+    callback(null, result.recordset[0] || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
-const updateStatusName = (statusName, postId, refuse, callback) => {
-    let query;
-    let params;
-    if (statusName === "Approved") {
-        query = `
-            UPDATE posts
-            SET statusName = ?
-            WHERE id = ?
-        `;
-        params = [statusName, postId];
-    } else if (statusName === "Rejected") {
-        query = `
-            UPDATE posts
-            SET statusName = ?, refuse = ?
-            WHERE id = ?
-        `;
-        params = [statusName, refuse, postId];
-    }
-    db.query(query, params, callback);
+const updateStatusName = async (statusName, postId, refuse, callback) => {
+  try {
+    const pool = await connectDB();
+    const result = await pool
+      .request()
+      .input("statusName", sql.NVarChar, statusName)
+      .input("postId", sql.Int, postId)
+      .input("refuse", sql.NVarChar, refuse)
+      .execute("UpdateStatusName");
+    callback(null, result.recordset || null);
+  } catch (err) {
+    callback(err);
+  }
 };
 
 module.exports = {
-    getAllPosts,
-    getPostById,
-    updatePublished,
-    getArticlesByStatusOfEditor,
-    isPostInEditorCategories,
-    getArticleById,
-    getCategoriesByIds,
-    getUsersByIds,
-    getCategoryById,
-    updateStatusName,
+  getAllPosts,
+  getPostById,
+  updatePublished,
+  getArticlesByStatusOfEditor,
+  isPostInEditorCategories,
+  getArticleById,
+  getCategoriesByIds,
+  getUsersByIds,
+  getCategoryById,
+  updateStatusName,
 };

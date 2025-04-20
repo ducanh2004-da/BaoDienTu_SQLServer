@@ -2,7 +2,7 @@ const User = require('../models/user');
 
 module.exports.show = (req, res) => {
   // Lấy thông tin user chi tiết từ cơ sở dữ liệu qua stored procedure sp_FindUserById
-  User.findById(req.session.user.id, (err, user) => {
+  User.findById(req.session.user.userId, (err, user) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -30,7 +30,7 @@ module.exports.viewEdit = (req, res) => {
 };
 
 module.exports.Edit = (req, res) => {
-  const id = req.session.user.id;
+  const id = req.session.user.userId;
   const userData = req.body;
 
   // Kiểm tra xem có file được tải lên hay không

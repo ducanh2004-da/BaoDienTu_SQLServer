@@ -63,11 +63,11 @@ const limiter = rateLimit({
   message: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.",
   headers: true, // Trả về headers cho biết còn bao nhiêu request có thể gửi
 });
-const loginLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 phút
-  max: 10, // Chỉ cho phép 5 lần thử đăng nhập mỗi 10 phút(ko hiểu sao bị mất 1 lần :"(( )
-  message: "Bạn đã nhập sai quá nhiều lần. Hãy thử lại sau 10 phút.",
-});
+// const loginLimiter = rateLimit({
+//   windowMs: 10 * 60 * 1000, // 10 phút
+//   max: 10, // Chỉ cho phép 5 lần thử đăng nhập mỗi 10 phút(ko hiểu sao bị mất 1 lần :"(( )
+//   message: "Bạn đã nhập sai quá nhiều lần. Hãy thử lại sau 10 phút.",
+// });
 // Áp dụng rate limiting cho tất cả các routes để tránh tấn công DDoS
 app.use(limiter);
 
@@ -218,7 +218,7 @@ app.use("/writer", writerRoutes);
 app.use("/editor", editorRoutes);
 app.use("/main", authMiddleware.isSubscriber, mainRoutes);
 app.use("/home", homeRoutes);
-app.use("/api", loginLimiter, authRoutes);
+app.use("/api", authRoutes);
 app.use("/admin", authMiddleware.isAdmin, adminRoutes);
 
 app.use((err, req, res, next) => {

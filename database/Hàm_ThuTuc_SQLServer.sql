@@ -193,6 +193,11 @@ CREATE PROCEDURE UpdatePost
   @title NVARCHAR(255), 
   @abstract NVARCHAR(MAX), 
   @content NVARCHAR(MAX)
+CREATE PROCEDURE UpdatePost 
+  @id INT, 
+  @title NVARCHAR(255), 
+  @abstract NVARCHAR(MAX), 
+  @content NVARCHAR(MAX)
 AS
 BEGIN
     UPDATE posts SET title = @title, abstract = @abstract, content = @content WHERE postId = @id;
@@ -497,6 +502,20 @@ BEGIN
     FROM post_categories
     WHERE postId = @postId
 END
+    SELECT categoryId
+    FROM categories
+    WHERE editorId = @editorId
+END
+GO
+
+CREATE PROCEDURE GetPostCategoryIds
+    @postId INT
+AS
+BEGIN
+    SELECT categoryId
+    FROM post_categories
+    WHERE postId = @postId
+END
 GO
 
 -- Lấy danh mục của bài viết theo postId
@@ -515,6 +534,21 @@ GO
 --7.Tạo và thao tác với bài viết của writer:
 -- Tạo stored procedure để thêm bài viết
 
+  CREATE PROCEDURE InsertArticle
+      @title NVARCHAR(255),
+      @publish_date DATETIME NULL,
+      @abstract NVARCHAR(MAX),
+      @content NVARCHAR(MAX),
+      @tags NVARCHAR(255),
+      @statusName NVARCHAR(50),
+      @userId INT,
+      @premium BIT
+  AS
+  BEGIN
+      INSERT INTO posts (title, abstract, content, tags, statusName, created_at, updated_at, userId, premium)
+      VALUES (@title, @abstract, @content, @tags, @statusName, GETDATE(), GETDATE(), @userId, @premium);
+  END
+  GO
   CREATE PROCEDURE InsertArticle
       @title NVARCHAR(255),
       @publish_date DATETIME NULL,
@@ -607,6 +641,19 @@ CREATE PROCEDURE InsertPostCategories
       VALUES (@postId, @categoryId);
   END
   GO
+END
+GO
+
+--
+CREATE PROCEDURE InsertPostCategories
+  @postId INT,
+  @categoryId INT
+  AS
+  BEGIN
+      INSERT INTO post_categories (postId, categoryId)
+      VALUES (@postId, @categoryId);
+  END
+  GO
 
 -- Tạo stored procedure để lấy bài viết theo userId
 
@@ -647,6 +694,7 @@ GO
 
 CREATE PROCEDURE UpdateArticle
     @postId INT,
+    @postId INT,
     @title NVARCHAR(255),
     @abstract NVARCHAR(MAX),
     @content NVARCHAR(MAX),
@@ -658,12 +706,35 @@ BEGIN
     UPDATE posts
     SET title = @title, abstract = @abstract, content = @content, statusName = @statusName, updated_at = GETDATE(), tags = @tags, premium = @premium
     WHERE postId = @postId;
+    WHERE postId = @postId;
 
+    DELETE FROM post_categories WHERE postId = @postId;
     DELETE FROM post_categories WHERE postId = @postId;
 END
 GO
 
 -- Trigger để tự động cập nhật ngày cập nhật của bài viết
+
+
+-- Tạo lại bằng INSTEAD OF UPDATE để kiểm soát hoàn toàn việc cập nhật
+-- CREATE TRIGGER trg_UpdatePostTimestamp
+-- ON posts
+-- INSTEAD OF UPDATE
+-- AS
+-- BEGIN
+--     SET NOCOUNT ON;
+
+--     -- Cập nhật các cột được update từ người dùng (trừ updated_at)
+--     UPDATE p
+--     SET 
+--         title = i.title,
+--         content = i.content,
+--         -- Thêm các cột khác cần cập nhật ở đây
+--         updated_at = GETDATE()
+--     FROM posts p
+--     INNER JOIN inserted i ON p.postId = i.postId;
+-- END
+-- GO
 
 
 -- Tạo lại bằng INSTEAD OF UPDATE để kiểm soát hoàn toàn việc cập nhật
@@ -762,6 +833,13 @@ GO
       SELECT * FROM posts WHERE postId = @postId;
   END; 
   GO 
+  CREATE PROCEDURE GetArticleById 
+      @postId INT 
+  AS 
+  BEGIN 
+      SELECT * FROM posts WHERE postId = @postId;
+  END; 
+  GO 
 
 -- Lấy danh mục theo danh sách ID
 
@@ -804,6 +882,8 @@ CREATE PROCEDURE UpdateStatusName
     @postId INT,
     @refuse NVARCHAR(MAX) = NULL
 AS
+BEGIN
+   UPDATE posts SET statusName = @statusName, refuse = @refuse WHERE postId = @postId;
 BEGIN
    UPDATE posts SET statusName = @statusName, refuse = @refuse WHERE postId = @postId;
 END;

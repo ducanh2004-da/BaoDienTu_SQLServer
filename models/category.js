@@ -50,7 +50,7 @@ const getCatById = async (id, callback) => {
     const result = await pool
       .request()
       .input("id", sql.Int, id)
-      .execute("GetCategoryByIds");
+      .execute("GetCategoryById");
     callback(null, result.recordset[0]);
   } catch (err) {
     callback(err, null);
